@@ -2,7 +2,7 @@ import torch
 import torch.nn as nn
 from .mask_predictor import SimpleDecoding,FPN_segmentor_Head
 from .backbone import MultiModalSwinTransformer
-from ._utils import LAVT, LAVTOne
+from ._utils import LAVT, LAVTOne, LAVTFPN
 from .fpn import FPN
 
 __all__ = ['lavt', 'lavt_one', 'lavt_fpn']
@@ -59,12 +59,13 @@ def _segm_lavtfpn(pretrained, args):
         print('Randomly initialize Multi-modal Swin Transformer weights.')
         backbone.init_weights()
 
-    model_map = [FPN_segmentor_Head, FPN, LAVT]
+    model_map = [FPN_segmentor_Head, FPN, LAVTFPN]
 
     classifier = model_map[0](8*embed_dim)
-    base_model = model_map[1]
+    neck = model_map[1]
+    base_model = model_map[2]
 
-    model = base_model(backbone, classifier)
+    model = base_model(backbone, neck, classifier)
 
     return model
 
