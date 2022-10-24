@@ -180,8 +180,7 @@ class FFNLayer(nn.Module):
 
 
 
-@HEADS.register_module()
-class FPN_segmentor_Head(BaseDecodeHead_momory):
+class FPN_segmentor_Head(nn.Module):
     """Panoptic Feature Pyramid Networks.
 
     This head is the implementation of `Semantic FPN
@@ -266,8 +265,6 @@ class FPN_segmentor_Head(BaseDecodeHead_momory):
         self.patch_proj = nn.Linear(embed_dims, embed_dims, bias=False)
         self.classes_proj = nn.Linear(embed_dims, embed_dims, bias=False)
 
-        # self.decoder_norm = build_norm_layer(
-        #     norm_cfg, embed_dims, postfix=1)[1]
         self.mask_norm = build_norm_layer(
             norm_cfg, self.num_subclasses*self.num_classes, postfix=2)[1]
 
@@ -317,14 +314,13 @@ class FPN_segmentor_Head(BaseDecodeHead_momory):
 
         output = F.normalize(output, dim=2, p=2)
         cls_seg_feat = F.normalize(cls_seg_feat, dim=2, p=2)
-        image_feat = output
         
         output = output @ cls_seg_feat.transpose(1, 2)
         output = self.mask_norm(output)
         output = output.permute(0, 2, 1).contiguous().view(b,-1, h, w)
         # output = torch.max(output,dim=1)[0]
 
-        return output,image_feat
+        return output
 
 
 
