@@ -16,11 +16,7 @@ from mmcv.runner import ModuleList
 from mmcv.cnn.utils.weight_init import (constant_init, trunc_normal_,
                                         trunc_normal_init)
 
-from mmseg.models.decode_heads.decode_head_memory import BaseDecodeHead_momory
 from mmseg.ops import Upsample, resize
-from ..builder import HEADS
-from .decode_head import BaseDecodeHead
-
 
 class SelfAttentionLayer(nn.Module):
 
