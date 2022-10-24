@@ -224,6 +224,7 @@ def main(args):
             single_bert_model.load_state_dict(checkpoint['bert_model'])
 
     # parameters to optimize
+
     backbone_no_decay = list()
     backbone_decay = list()
     for name, m in single_model.backbone.named_parameters():
@@ -236,6 +237,18 @@ def main(args):
         params_to_optimize = [
             {'params': backbone_no_decay, 'weight_decay': 0.0},
             {'params': backbone_decay},
+            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
+            # the following are the parameters of bert
+            {"params": reduce(operator.concat,
+                              [[p for p in single_bert_model.encoder.layer[i].parameters()
+                                if p.requires_grad] for i in range(10)])},
+        ]
+
+    elif args.model != 'lavt_fpn':
+        params_to_optimize = [
+            {'params': backbone_no_decay, 'weight_decay': 0.0},
+            {'params': backbone_decay},
+            
             {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
             # the following are the parameters of bert
             {"params": reduce(operator.concat,

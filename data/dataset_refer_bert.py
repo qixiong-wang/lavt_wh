@@ -87,7 +87,6 @@ class ReferDataset(data.Dataset):
         this_ref_id = self.ref_ids[index]
         this_img_id = self.refer.getImgIds(this_ref_id)
         this_img = self.refer.Imgs[this_img_id[0]]
-
         img = Image.open(os.path.join(self.refer.IMAGE_DIR, this_img['file_name'])).convert("RGB")
 
         ref = self.refer.loadRefs(this_ref_id)
