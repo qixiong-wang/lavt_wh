@@ -197,8 +197,8 @@ def main(args):
 
     # model initialization
     print(args.model)
-    model = segmentation.__dict__[args.model](pretrained=args.pretrained_swin_weights,
-                                              args=args)
+
+    model = segmentation.__dict__[args.model](pretrained=args.pretrained_swin_weights, args=args)
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model.cuda()
     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank], find_unused_parameters=True)
@@ -233,7 +233,20 @@ def main(args):
         else:
             backbone_decay.append(m)
 
-    if args.model != 'lavt_one':
+    if args.model == 'lavt_fpn':
+        params_to_optimize = [
+            {'params': backbone_no_decay, 'weight_decay': 0.0},
+            {'params': backbone_decay},
+            {"params": [p for p in single_model.neck.parameters() if p.requires_grad]},
+            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
+            # the following are the parameters of bert
+            {"params": reduce(operator.concat,
+                              [[p for p in single_bert_model.encoder.layer[i].parameters()
+                                if p.requires_grad] for i in range(10)])},
+        ]
+
+    elif args.model != 'lavt_one':
+
         params_to_optimize = [
             {'params': backbone_no_decay, 'weight_decay': 0.0},
             {'params': backbone_decay},
@@ -244,17 +257,6 @@ def main(args):
                                 if p.requires_grad] for i in range(10)])},
         ]
 
-    elif args.model != 'lavt_fpn':
-        params_to_optimize = [
-            {'params': backbone_no_decay, 'weight_decay': 0.0},
-            {'params': backbone_decay},
-            
-            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
-            # the following are the parameters of bert
-            {"params": reduce(operator.concat,
-                              [[p for p in single_bert_model.encoder.layer[i].parameters()
-                                if p.requires_grad] for i in range(10)])},
-        ]
     else:
         params_to_optimize = [
             {'params': backbone_no_decay, 'weight_decay': 0.0},

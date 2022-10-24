@@ -188,14 +188,25 @@ class FPN_segmentor_Head(nn.Module):
             one is of largest resolution.
     """
 
-    def __init__(self, feature_strides, **kwargs):
-        super(FPN_segmentor_Head, self).__init__(
-            input_transform='multiple_select', **kwargs)
+    def __init__(self, feature_strides=[4, 8, 16, 32]):
+        super(FPN_segmentor_Head, self).__init__()
+
+        self.in_channels=[256, 256, 256, 256]
+        self.in_index=[0, 1, 2, 3]
+        self.feature_strides=[4, 8, 16, 32]
+        self.channels=128
+        self.dropout_ratio=0.1
+        self.num_classes=2
+        self.scale_heads = nn.ModuleList()
+        self.norm_cfg=dict(type='SyncBN', requires_grad=True)
+        self.align_corners=False
+        self.conv_cfg=None
+        self.act_cfg=dict(type='ReLU')
+
         assert len(feature_strides) == len(self.in_channels)
         assert min(feature_strides) == feature_strides[0]
         self.feature_strides = feature_strides
 
-        self.scale_heads = nn.ModuleList()
         for i in range(len(feature_strides)):
             head_length = max(
                 1,
@@ -227,9 +238,8 @@ class FPN_segmentor_Head(nn.Module):
         embed_dims = 128
         # self.dec_proj = nn.Linear(in_channels, embed_dims)\
 
-        self.num_subclasses = 1
         self.cls_emb = nn.Parameter(
-            torch.randn(1, self.num_subclasses* self.num_classes, embed_dims))
+            torch.randn(1, self.num_classes, embed_dims))
         for i in range(len(feature_strides)-1):
             self.transformer_cross_attention_layers.append(
                 CrossAttentionLayer(
@@ -262,9 +272,8 @@ class FPN_segmentor_Head(nn.Module):
         self.classes_proj = nn.Linear(embed_dims, embed_dims, bias=False)
 
         self.mask_norm = build_norm_layer(
-            norm_cfg, self.num_subclasses*self.num_classes, postfix=2)[1]
+            norm_cfg, self.num_classes, postfix=2)[1]
 
-        delattr(self, 'conv_seg')
         init_std = 0.02
         self.init_std = init_std
  
@@ -280,8 +289,7 @@ class FPN_segmentor_Head(nn.Module):
 
     def forward(self, inputs):
 
-        x = self._transform_inputs(inputs)
-
+        x = inputs
         output = self.scale_heads[0](x[0])
         cls_seg_feat = self.cls_emb.expand(output.size(0), -1, -1)
         for i in range(1, len(self.feature_strides)):

@@ -8,7 +8,7 @@ from bert.modeling_bert import BertModel
 
 class LAVTFPN(nn.Module):
     def __init__(self, backbone, neck, classifier):
-        super(_LAVTSimpleDecode, self).__init__()
+        super(LAVTFPN, self).__init__()
         self.backbone = backbone
         self.neck = neck 
         self.classifier = classifier
@@ -17,7 +17,8 @@ class LAVTFPN(nn.Module):
         input_shape = x.shape[-2:]
         features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = self.neck(features)
-        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+
+        x = self.classifier([x_c1, x_c2, x_c3, x_c4])
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
 
         return x

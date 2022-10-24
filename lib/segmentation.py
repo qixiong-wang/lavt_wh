@@ -61,8 +61,8 @@ def _segm_lavtfpn(pretrained, args):
 
     model_map = [FPN_segmentor_Head, FPN, LAVTFPN]
 
-    classifier = model_map[0](8*embed_dim)
-    neck = model_map[1]
+    classifier = model_map[0]()
+    neck = model_map[1]()
     base_model = model_map[2]
 
     model = base_model(backbone, neck, classifier)
@@ -71,12 +71,12 @@ def _segm_lavtfpn(pretrained, args):
 
 
 def _load_model_lavtfpn(pretrained, args):
-    model = _segm_lavt(pretrained, args)
+    model = _segm_lavtfpn(pretrained, args)
     return model
 
 
 def lavtfpn(pretrained='', args=None):
-    return _load_model_lavt(pretrained, args)
+    return _load_model_lavtfpn(pretrained, args)
 
 
 
