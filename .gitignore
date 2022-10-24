@@ -2,7 +2,7 @@
 data
 .vscode
 .idea
-
+__pycache__/*
 # custom
 *.pkl
 # Pytorch
