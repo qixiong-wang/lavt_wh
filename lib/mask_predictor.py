@@ -298,9 +298,7 @@ class FPN_segmentor_Head(nn.Module):
             resized_patches = output
             b, c, h, w = resized_patches.shape
             resized_patches = resized_patches.permute(0, 2, 3, 1).contiguous().view(b, -1, c)
-            cls_seg_feat = self.transformer_cross_attention_layers[i-1](cls_seg_feat,resized_patches)
-            cls_seg_feat = self.transformer_self_attention_layers[i-1](cls_seg_feat)
-            cls_seg_feat = self.transformer_ffn_layers[i-1](cls_seg_feat)
+
 
             output = output + resize(
                 self.scale_heads[i](x[i]),
@@ -312,7 +310,10 @@ class FPN_segmentor_Head(nn.Module):
         # cls_seg_feat = self.decoder_norm(cls_seg_feat)
         b, c, h, w = output.shape
         output = output.permute(0, 2, 3, 1).contiguous().view(b, -1, c)
-
+        cls_seg_feat = self.transformer_cross_attention_layers(cls_seg_feat,output)
+        cls_seg_feat = self.transformer_self_attention_layers(cls_seg_feat)
+        cls_seg_feat = self.transformer_ffn_layers(cls_seg_feat)
+        
         output = self.patch_proj(output)
         cls_seg_feat = self.classes_proj(cls_seg_feat)
 
