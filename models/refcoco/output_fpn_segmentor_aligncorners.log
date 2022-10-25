@@ -1,32 +1,14 @@
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torch/distributed/launch.py:186: FutureWarning: The module torch.distributed.launch is deprecated
-and will be removed in future. Use torch.distributed.run.
-Note that --use_env is set by default in torch.distributed.run.
-If your script expects `--local_rank` argument to be set, please
-change it to read from `os.environ['LOCAL_RANK']` instead. See 
-https://pytorch.org/docs/stable/distributed.html#launch-utility for 
-further instructions
-
-  FutureWarning,
-WARNING:torch.distributed.run:*****************************************
-Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
-*****************************************
-RANK and WORLD_SIZE in environment: 1/4
-RANK and WORLD_SIZE in environment: 3/4
-RANK and WORLD_SIZE in environment: 2/4
-RANK and WORLD_SIZE in environment: 0/4
+RANK and WORLD_SIZE in environment: 0/1
 [W ProcessGroupNCCL.cpp:1569] Rank 0 using best-guess GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
-[W ProcessGroupNCCL.cpp:1569] Rank 2 using best-guess GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
-[W ProcessGroupNCCL.cpp:1569] Rank 3 using best-guess GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
-[W ProcessGroupNCCL.cpp:1569] Rank 1 using best-guess GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
 Image size: 480
 loading dataset refcoco into memory...
 creating index...
 index created.
-DONE (t=6.83s)
+DONE (t=7.37s)
 loading dataset refcoco into memory...
 creating index...
 index created.
-DONE (t=8.00s)
+DONE (t=8.81s)
 local rank 0 / global rank 0 successfully built train dataset.
 lavtfpn
 Window size 12!
@@ -47,88 +29,5 @@ Initializing Multi-modal Swin Transformer weights from ./pretrained_weights/swin
   "Argument interpolation should be of type InterpolationMode instead of int. "
 /home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
   "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
-  "Argument interpolation should be of type InterpolationMode instead of int. "
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (60, 60) is `x+1` and out size (120, 120) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (30, 30) is `x+1` and out size (60, 60) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (15, 15) is `x+1` and out size (30, 30) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (60, 60) is `x+1` and out size (120, 120) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (30, 30) is `x+1` and out size (60, 60) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (15, 15) is `x+1` and out size (30, 30) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (60, 60) is `x+1` and out size (120, 120) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (30, 30) is `x+1` and out size (60, 60) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (15, 15) is `x+1` and out size (30, 30) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (60, 60) is `x+1` and out size (120, 120) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (30, 30) is `x+1` and out size (60, 60) is `nx+1`
-  f'When align_corners={align_corners}, '
-/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/mmseg/ops/wrappers.py:23: UserWarning: When align_corners=True, the output would more aligned if input size (15, 15) is `x+1` and out size (30, 30) is `nx+1`
-  f'When align_corners={align_corners}, '
-Epoch: [0]  [   0/1325]  eta: 2:37:24  lr: 4.999915094259522e-05  loss: 0.6216 (0.6216)  time: 7.1277  data: 1.0368  max mem: 18297
-Epoch: [0]  [  10/1325]  eta: 1:57:26  lr: 4.9990660280430504e-05  loss: 0.4366 (0.4668)  time: 5.3584  data: 0.1028  max mem: 20409
-Epoch: [0]  [  20/1325]  eta: 1:54:49  lr: 4.998216945802984e-05  loss: 0.4183 (0.4395)  time: 5.1870  data: 0.0084  max mem: 20409
-Epoch: [0]  [  30/1325]  eta: 1:52:55  lr: 4.9973678475359964e-05  loss: 0.3659 (0.4258)  time: 5.1624  data: 0.0084  max mem: 20409
-Epoch: [0]  [  40/1325]  eta: 1:50:46  lr: 4.996518733238759e-05  loss: 0.3594 (0.4128)  time: 5.0597  data: 0.0099  max mem: 20409
-Epoch: [0]  [  50/1325]  eta: 1:50:03  lr: 4.995669602907943e-05  loss: 0.3430 (0.3987)  time: 5.0984  data: 0.0101  max mem: 20409
-Epoch: [0]  [  60/1325]  eta: 1:48:26  lr: 4.9948204565402165e-05  loss: 0.3430 (0.3968)  time: 5.0842  data: 0.0097  max mem: 20409
-Epoch: [0]  [  70/1325]  eta: 1:47:32  lr: 4.993971294132248e-05  loss: 0.3619 (0.3936)  time: 5.0456  data: 0.0093  max mem: 20409
-Epoch: [0]  [  80/1325]  eta: 1:46:28  lr: 4.993122115680702e-05  loss: 0.3675 (0.3929)  time: 5.0957  data: 0.0088  max mem: 20409
-Epoch: [0]  [  90/1325]  eta: 1:45:49  lr: 4.9922729211822464e-05  loss: 0.3695 (0.3923)  time: 5.1383  data: 0.0085  max mem: 20409
-Epoch: [0]  [ 100/1325]  eta: 1:44:56  lr: 4.991423710633543e-05  loss: 0.3964 (0.3984)  time: 5.1759  data: 0.0084  max mem: 20409
-Epoch: [0]  [ 110/1325]  eta: 1:44:14  lr: 4.990574484031256e-05  loss: 0.3975 (0.3986)  time: 5.1791  data: 0.0081  max mem: 20409
-Epoch: [0]  [ 120/1325]  eta: 1:43:41  lr: 4.9897252413720446e-05  loss: 0.3673 (0.3976)  time: 5.2756  data: 0.0082  max mem: 20409
+Epoch: [0]  [   0/5300]  eta: 6:32:51  lr: 4.9999787735798995e-05  loss: 1.8498 (1.8498)  time: 4.4475  data: 1.0724  max mem: 17928
+Epoch: [0]  [  10/5300]  eta: 3:53:04  lr: 4.999766508828197e-05  loss: 1.2616 (1.2500)  time: 2.6436  data: 0.1044  max mem: 20038

@@ -230,9 +230,9 @@ class FPN_segmentor_Head(nn.Module):
                             align_corners=self.align_corners))
             self.scale_heads.append(nn.Sequential(*scale_head))
 
-        self.transformer_self_attention_layers = nn.ModuleList()
-        self.transformer_cross_attention_layers = nn.ModuleList()
-        self.transformer_ffn_layers = nn.ModuleList()
+        # self.transformer_self_attention_layers = nn.ModuleList()
+        # self.transformer_cross_attention_layers = nn.ModuleList()
+        # self.transformer_ffn_layers = nn.ModuleList()
 
         num_heads = 2
         embed_dims = 128
@@ -247,7 +247,7 @@ class FPN_segmentor_Head(nn.Module):
                 dropout=0.0,
                 normalize_before=False,
             )
-        self.transformer_self_attention_layer= SelfAttentionLayer(
+        self.transformer_self_attention_layers= SelfAttentionLayer(
                     d_model=embed_dims,
                     nhead=num_heads,
                     dropout=0.0,
@@ -289,11 +289,7 @@ class FPN_segmentor_Head(nn.Module):
         cls_seg_feat = self.cls_emb.expand(output.size(0), -1, -1)
         for i in range(1, len(self.feature_strides)):
             # non inplace
-            
-            resized_patches = output
-            b, c, h, w = resized_patches.shape
-            resized_patches = resized_patches.permute(0, 2, 3, 1).contiguous().view(b, -1, c)
-
+  
 
             output = output + resize(
                 self.scale_heads[i](x[i]),
