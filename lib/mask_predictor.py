@@ -240,30 +240,25 @@ class FPN_segmentor_Head(nn.Module):
 
         self.cls_emb = nn.Parameter(
             torch.randn(1, self.num_classes, embed_dims))
-        for i in range(len(feature_strides)-1):
-            self.transformer_cross_attention_layers.append(
-                CrossAttentionLayer(
+
+        self.transformer_cross_attention_layers = CrossAttentionLayer(
+                d_model=embed_dims,
+                nhead=num_heads,
+                dropout=0.0,
+                normalize_before=False,
+            )
+        self.transformer_self_attention_layer= SelfAttentionLayer(
                     d_model=embed_dims,
                     nhead=num_heads,
                     dropout=0.0,
                     normalize_before=False,
                 )
-            )
-            self.transformer_self_attention_layers.append(
-                SelfAttentionLayer(
-                        d_model=embed_dims,
-                        nhead=num_heads,
-                        dropout=0.0,
-                        normalize_before=False,
-                    )
-            )
-            self.transformer_ffn_layers.append(
-                FFNLayer(
-                    d_model=embed_dims,
-                    dim_feedforward=num_heads,
-                    dropout=0.0,
-                    normalize_before=False,
-                )
+
+        self.transformer_ffn_layers = FFNLayer(
+                d_model=embed_dims,
+                dim_feedforward=num_heads,
+                dropout=0.0,
+                normalize_before=False,
             )
 
         norm_cfg = dict(type='LN')
@@ -313,7 +308,7 @@ class FPN_segmentor_Head(nn.Module):
         cls_seg_feat = self.transformer_cross_attention_layers(cls_seg_feat,output)
         cls_seg_feat = self.transformer_self_attention_layers(cls_seg_feat)
         cls_seg_feat = self.transformer_ffn_layers(cls_seg_feat)
-        
+
         output = self.patch_proj(output)
         cls_seg_feat = self.classes_proj(cls_seg_feat)
 
