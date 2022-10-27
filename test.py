@@ -47,6 +47,7 @@ def evaluate(model, data_loader, bert_model, device):
             image, target, sentences, attentions = data
             image, target, sentences, attentions = image.to(device), target.to(device), \
                                                    sentences.to(device), attentions.to(device)
+            
             sentences = sentences.squeeze(1)
             attentions = attentions.squeeze(1)
             target = target.cpu().data.numpy()

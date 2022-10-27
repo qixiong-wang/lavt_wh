@@ -233,7 +233,7 @@ def main(args):
         else:
             backbone_decay.append(m)
 
-    if args.model == 'lavt_fpn':
+    if args.model == 'lavtfpn':
         params_to_optimize = [
             {'params': backbone_no_decay, 'weight_decay': 0.0},
             {'params': backbone_decay},

@@ -289,18 +289,16 @@ class FPN_segmentor_Head(nn.Module):
         cls_seg_feat = self.cls_emb.expand(output.size(0), -1, -1)
         for i in range(1, len(self.feature_strides)):
             # non inplace
-  
-
             output = output + resize(
                 self.scale_heads[i](x[i]),
                 size=output.shape[2:],
                 mode='bilinear',
                 align_corners=self.align_corners)
 
-
         # cls_seg_feat = self.decoder_norm(cls_seg_feat)
         b, c, h, w = output.shape
         output = output.permute(0, 2, 3, 1).contiguous().view(b, -1, c)
+ 
         cls_seg_feat = self.transformer_cross_attention_layers(cls_seg_feat,output)
         cls_seg_feat = self.transformer_self_attention_layers(cls_seg_feat)
         cls_seg_feat = self.transformer_ffn_layers(cls_seg_feat)
