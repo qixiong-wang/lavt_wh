@@ -1,0 +1,15 @@
+data
+.vscode
+.idea
+__pycache__/*
+# custom
+*.pkl
+# Pytorch
+*.json
+refer/data/*
+bert/pytorch_model.bin
+*.jpg
+*.pth
+*.png
+vis*
+*.zip
