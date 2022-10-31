@@ -352,6 +352,40 @@ class SimpleDecoding(nn.Module):
         self.relu2_2 = nn.ReLU()
 
         self.conv1_1 = nn.Conv2d(hidden_size, 2, 1)
+        num_heads = 2
+        embed_dims = 128
+        self.num_classes = 2
+        self.cls_emb = nn.Parameter(
+            torch.randn(1, self.num_classes, embed_dims))
+
+        self.transformer_cross_attention_layers = CrossAttentionLayer(
+                d_model=embed_dims,
+                nhead=num_heads,
+                dropout=0.0,
+                normalize_before=False,
+            )
+        self.transformer_self_attention_layers= SelfAttentionLayer(
+                    d_model=embed_dims,
+                    nhead=num_heads,
+                    dropout=0.0,
+                    normalize_before=False,
+                )
+
+        self.transformer_ffn_layers = FFNLayer(
+                d_model=embed_dims,
+                dim_feedforward=num_heads,
+                dropout=0.0,
+                normalize_before=False,
+            )
+
+        norm_cfg = dict(type='LN')
+
+        self.patch_proj = nn.Linear(embed_dims, embed_dims, bias=False)
+        self.classes_proj = nn.Linear(embed_dims, embed_dims, bias=False)
+
+        self.mask_norm = build_norm_layer(
+            norm_cfg, self.num_classes, postfix=2)[1]
+        # trunc_normal_(self.cls_emb, std=0.02)
 
     def forward(self, x_c4, x_c3, x_c2, x_c1):
 
@@ -380,11 +414,32 @@ class SimpleDecoding(nn.Module):
         if x.size(-2) < x_c1.size(-2) or x.size(-1) < x_c1.size(-1):
             x = F.interpolate(input=x, size=(x_c1.size(-2), x_c1.size(-1)), mode='bilinear', align_corners=True)
         x = torch.cat([x, x_c1], dim=1)
+
         x = self.conv1_2(x)
         x = self.bn1_2(x)
         x = self.relu1_2(x)
         x = self.conv2_2(x)
         x = self.bn2_2(x)
         x = self.relu2_2(x)
+        output = self.conv1_1(x)
+        # output = x
+
+        # b, c, h, w = output.shape
+        # output = output.permute(0, 2, 3, 1).contiguous().view(b, -1, c)
+
+        # cls_seg_feat = self.cls_emb.expand(output.size(0), -1, -1)
+        # cls_seg_feat = self.transformer_cross_attention_layers(cls_seg_feat,output)
+        # cls_seg_feat = self.transformer_self_attention_layers(cls_seg_feat)
+        # cls_seg_feat = self.transformer_ffn_layers(cls_seg_feat)
+
+        # output = self.patch_proj(output)
+        # cls_seg_feat = self.classes_proj(cls_seg_feat)
+
+        # output = F.normalize(output, dim=2, p=2)
+        # cls_seg_feat = F.normalize(cls_seg_feat, dim=2, p=2)
         
-        return self.conv1_1(x)
+        # output = output @ cls_seg_feat.transpose(1, 2)
+        # output = self.mask_norm(output)
+        # output = output.permute(0, 2, 1).contiguous().view(b,-1, h, w)
+
+        return output
