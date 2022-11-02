@@ -50,19 +50,19 @@ class SimpleDecoding(nn.Module):
         self.bn2_4 = nn.BatchNorm2d(hidden_size)
         self.relu2_4 = nn.ReLU()
 
-        self.cydecode1 = CycleDecode(hidden_size)
+        # self.cydecode1 = CycleDecode(hidden_size)
 
-        self.conv1_3 = nn.Conv2d(hidden_size + c2_size + 2, hidden_size, 3, padding=1, bias=False)
+        self.conv1_3 = nn.Conv2d(hidden_size + c2_size, hidden_size, 3, padding=1, bias=False)
         self.bn1_3 = nn.BatchNorm2d(hidden_size)
         self.relu1_3 = nn.ReLU()
         self.conv2_3 = nn.Conv2d(hidden_size, hidden_size, 3, padding=1, bias=False)
         self.bn2_3 = nn.BatchNorm2d(hidden_size)
         self.relu2_3 = nn.ReLU()
 
-        self.cydecode2 = CycleDecode(hidden_size)
+        # self.cydecode2 = CycleDecode(hidden_size)
 
 
-        self.conv1_2 = nn.Conv2d(hidden_size + c1_size + 2, hidden_size, 3, padding=1, bias=False)
+        self.conv1_2 = nn.Conv2d(hidden_size + c1_size, hidden_size, 3, padding=1, bias=False)
         self.bn1_2 = nn.BatchNorm2d(hidden_size)
         self.relu1_2 = nn.ReLU()
         self.conv2_2 = nn.Conv2d(hidden_size, hidden_size, 3, padding=1, bias=False)
@@ -83,14 +83,14 @@ class SimpleDecoding(nn.Module):
         x = self.bn2_4(x)
         x = self.relu2_4(x)
 
-        pre1 = self.cydecode1(x) ## pre1 [B, 512, 30, 30]
+        # pre1 = self.cydecode1(x) ## pre1 [B, 512, 30, 30]
 
         # fuse top-down features and Y2 features and pre1
         if x.size(-2) < x_c2.size(-2) or x.size(-1) < x_c2.size(-1):
             x = F.interpolate(input=x, size=(x_c2.size(-2), x_c2.size(-1)), mode='bilinear', align_corners=True)
-        if pre1.size(-2) < x_c2.size(-2) or pre1.size(-1) < x_c2.size(-1):
-            pre1 = F.interpolate(input=pre1, size=(x_c2.size(-2), x_c2.size(-1)), mode='bilinear', align_corners=True)
-        x = torch.cat([x, x_c2, pre1], dim=1)
+        # if pre1.size(-2) < x_c2.size(-2) or pre1.size(-1) < x_c2.size(-1):
+        #     pre1 = F.interpolate(input=pre1, size=(x_c2.size(-2), x_c2.size(-1)), mode='bilinear', align_corners=True)
+        x = torch.cat([x, x_c2], dim=1)
         x = self.conv1_3(x)
         x = self.bn1_3(x)
         x = self.relu1_3(x)
@@ -98,14 +98,14 @@ class SimpleDecoding(nn.Module):
         x = self.bn2_3(x)
         x = self.relu2_3(x)
 
-        pre2 = self.cydecode2(x) ## pre1 [B, 512, 60, 60]
+        # pre2 = self.cydecode2(x) ## pre1 [B, 512, 60, 60]
 
         # fuse top-down features and Y1 features
         if x.size(-2) < x_c1.size(-2) or x.size(-1) < x_c1.size(-1):
             x = F.interpolate(input=x, size=(x_c1.size(-2), x_c1.size(-1)), mode='bilinear', align_corners=True)
-        if pre2.size(-2) < x_c1.size(-2) or pre2.size(-1) < x_c1.size(-1):
-            pre2 = F.interpolate(input=pre2, size=(x_c1.size(-2), x_c1.size(-1)), mode='bilinear', align_corners=True)
-        x = torch.cat([x, x_c1, pre2], dim=1)
+        # if pre2.size(-2) < x_c1.size(-2) or pre2.size(-1) < x_c1.size(-1):
+        #     pre2 = F.interpolate(input=pre2, size=(x_c1.size(-2), x_c1.size(-1)), mode='bilinear', align_corners=True)
+        x = torch.cat([x, x_c1], dim=1)
         x = self.conv1_2(x)
         x = self.bn1_2(x)
         x = self.relu1_2(x)
@@ -113,4 +113,4 @@ class SimpleDecoding(nn.Module):
         x = self.bn2_2(x)
         x = self.relu2_2(x)
 
-        return pre1, pre2, self.conv1_1(x)
+        return self.conv1_1(x)

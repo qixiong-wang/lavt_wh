@@ -6,24 +6,27 @@ from torch.nn import functional as F
 from bert.modeling_bert import BertModel
 
 
-# class _LAVTSimpleDecode(nn.Module):
-#     def __init__(self, backbone, classifier):
-#         super(_LAVTSimpleDecode, self).__init__()
-#         self.backbone = backbone
-#         self.classifier = classifier
-#
-#     def forward(self, x, l_feats, l_mask):
-#         input_shape = x.shape[-2:]
-#         features = self.backbone(x, l_feats, l_mask)
-#         x_c1, x_c2, x_c3, x_c4 = features
-#         x = self.classifier(x_c4, x_c3, x_c2, x_c1)
-#         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-#
-#         return x
-
 class _LAVTSimpleDecode(nn.Module):
     def __init__(self, backbone, classifier):
         super(_LAVTSimpleDecode, self).__init__()
+        self.backbone = backbone
+        self.classifier = classifier
+
+    def forward(self, x, l_feats, l_mask):
+        input_shape = x.shape[-2:]
+        features = self.backbone(x, l_feats, l_mask)
+        x_c1, x_c2, x_c3, x_c4 = features
+        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+
+        return x
+
+class LAVT(_LAVTSimpleDecode):
+    pass
+
+class _LAVTSimpleDecode_cycle(nn.Module):
+    def __init__(self, backbone, classifier):
+        super(_LAVTSimpleDecode_cycle, self).__init__()
         self.backbone = backbone
         self.classifier = classifier
 
@@ -39,7 +42,7 @@ class _LAVTSimpleDecode(nn.Module):
         return pre1, pre2, x
 
 
-class LAVT(_LAVTSimpleDecode):
+class LAVT_cycle(_LAVTSimpleDecode_cycle):
     pass
 
 class _LAVTSimpleDecode_KC(nn.Module):
