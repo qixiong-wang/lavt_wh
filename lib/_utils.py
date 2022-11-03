@@ -1,3 +1,4 @@
+import pdb
 from collections import OrderedDict
 import sys
 import torch
@@ -15,11 +16,12 @@ class _LAVTSimpleDecode(nn.Module):
     def forward(self, x, l_feats, l_mask):
         input_shape = x.shape[-2:]
         features = self.backbone(x, l_feats, l_mask)
-        x_c1, x_c2, x_c3, x_c4 = features
-        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        l_new, (x_c1, x_c2, x_c3, x_c4) = features
+        defea, x = self.classifier(x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        # pdb.set_trace()
 
-        return x
+        return l_new, defea, x
 
 class LAVT(_LAVTSimpleDecode):
     pass
