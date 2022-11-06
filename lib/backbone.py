@@ -461,6 +461,7 @@ class MultiModalSwinTransformer(nn.Module):
 
     def forward(self, x, l, l_mask):
         """Forward function."""
+
         x = self.patch_embed(x)
 
         Wh, Ww = x.size(2), x.size(3)

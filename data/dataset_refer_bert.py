@@ -77,6 +77,7 @@ class ReferDataset(data.Dataset):
             self.input_ids.append(sentences_for_ref)
             self.attention_masks.append(attentions_for_ref)
 
+
     def get_classes(self):
         return self.classes
 
@@ -116,5 +117,6 @@ class ReferDataset(data.Dataset):
             choice_sent = np.random.choice(len(self.input_ids[index]))
             tensor_embeddings = self.input_ids[index][choice_sent]
             attention_mask = self.attention_masks[index][choice_sent]
+
 
         return img, target, tensor_embeddings, attention_mask

@@ -94,7 +94,7 @@ def evaluate(model, data_loader, bert_model):
                 last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]
                 embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
                 attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
-                output = model(image, embedding, l_mask=attentions)
+                output, loss = model(image, embedding, l_mask=attentions)
             else:
                 output = model(image, sentences, l_mask=attentions)
 
@@ -147,11 +147,14 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
             last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]  # (6, 10, 768)
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-            output = model(image, embedding, l_mask=attentions)
+            
+            output, loss_recon = model(image, embedding, attentions)
         else:
-            output = model(image, sentences, l_mask=attentions)
+            output = model(image, sentences, target, l_mask=attentions)
 
-        loss = criterion(output, target)
+        loss_mask = criterion(output, target)
+        loss = loss_mask + loss_recon
+
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()
         optimizer.step()
@@ -160,8 +163,8 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         torch.cuda.synchronize()
         train_loss += loss.item()
         iterations += 1
-        metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
-
+        # metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
+        metric_logger.update(loss_mask=loss_mask.item(), loss_recon=loss_recon.item(),lr=optimizer.param_groups[0]["lr"])
         del image, target, sentences, attentions, loss, output, data
         if bert_model is not None:
             del last_hidden_states, embedding
