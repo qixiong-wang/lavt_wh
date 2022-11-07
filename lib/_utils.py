@@ -5,7 +5,7 @@ from torch import nn
 from torch.nn import functional as F
 from bert.modeling_bert import BertModel
 
-
+from .memory_queue import Memory_queue
 
 
 
@@ -13,17 +13,17 @@ class _LAVTSimpleDecode(nn.Module):
     def __init__(self, backbone, classifier):
         super(_LAVTSimpleDecode, self).__init__()
         self.backbone = backbone
-        
+        self.memory_queue = Memory_queue(number_of_instance=1000, feat_len=768)
         self.classifier = classifier
 
     def forward(self, x, l_feats, l_mask):
         input_shape = x.shape[-2:]
         features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
-        x, embedding = self.classifier(x_c4, x_c3, x_c2, x_c1)
-        embedding = embedding.squeeze()
-        if len(embedding.shape)>1: ### eval
-            embedding = F.normalize(embedding,dim=1)
+        x, vis_embedding = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        vis_embedding = vis_embedding.squeeze()
+        if len(vis_embedding.shape)>1: ### eval
+            vis_embedding = F.normalize(vis_embedding,dim=1)
             batch_size=l_mask.shape[0]
             l_feat_last = []
             for i in range(batch_size):
@@ -31,11 +31,16 @@ class _LAVTSimpleDecode(nn.Module):
             l_feat_last = torch.stack(l_feat_last)
             l_feat_last = F.normalize(l_feat_last,dim=1)
 
-            contrast_label = torch.eye(batch_size).cuda(l_feat_last.device)
-            img_text_logits = F.softmax(torch.matmul(embedding,l_feat_last.permute(1,0)),dim=1)
-            text_img_logits = F.softmax(torch.matmul(embedding,l_feat_last.permute(1,0)),dim=0)
+            vis_embedding_queue, l_feat_queue = self.memory_queue(vis_embedding,l_feat_last)
+
+            contrast_label = torch.eye(1000).cuda(l_feat_last.device)
+
+            img_text_logits = F.softmax(10*torch.matmul(vis_embedding_queue,l_feat_queue.permute(1,0)),dim=1)
+            text_img_logits = F.softmax(10*torch.matmul(vis_embedding_queue,l_feat_queue.permute(1,0)),dim=0)
+            import pdb
+            pdb.set_trace()
             loss_recon = -torch.multiply(contrast_label,torch.log(img_text_logits))-torch.multiply(contrast_label,torch.log(text_img_logits))
-            loss_recon = torch.mean(loss_recon)
+            loss_recon = torch.mean(loss_recon)*contrast_label.shape[0]
         else:
             loss_recon = 0
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
