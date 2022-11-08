@@ -54,7 +54,7 @@ class SimpleDecoding(nn.Module):
 
         self.num_classes = 2
 
-    def forward(self, x_c4, x_c3, x_c2, x_c1):
+    def forward(self, x_c4, x_c3, x_c2, x_c1, target=None):
 
         # fuse Y4 and Y3
 
@@ -90,7 +90,14 @@ class SimpleDecoding(nn.Module):
         x = self.relu2_2(x)
 
         embedding = self.conv_emb(x)
-        embedding = F.adaptive_avg_pool2d(embedding,output_size=1)
+        if target!=None:
+            target = target.unsqueeze(1).float()
+            target = F.interpolate(input=target,size=(x_c1.size(-2), x_c1.size(-1)), mode='bilinear', align_corners=True)
+            embedding = torch.sum(torch.multiply(target,embedding),dim=[2,3])/torch.sum(torch.sum(target,dim=[2,3]))
+        
+        else:
+            embedding = F.adaptive_avg_pool2d(embedding,output_size=1)
+
         output = self.conv1_1(x)
         # output = x
 

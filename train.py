@@ -148,7 +148,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
             
-            output, loss_recon = model(image, embedding, attentions)
+            output, loss_recon = model(image, embedding, attentions, target)
         else:
             output = model(image, sentences, target, l_mask=attentions)
 
