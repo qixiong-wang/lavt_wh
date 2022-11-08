@@ -41,7 +41,8 @@ class _LAVTSimpleDecode(nn.Module):
             text_img_logits = F.softmax(10*torch.matmul(l_feat_queue,vis_embedding.permute(1,0)),dim=0)
             pos_ind = torch.arange(batch_size).cuda(l_feat_last.device) + self.memory_queue.tail - batch_size
             pos_ind = torch.where(pos_ind<0,pos_ind+self.number_of_instance,pos_ind)
-
+            import pdb 
+            pdb.set_trace()
             loss_recon = -torch.multiply(contrast_label,torch.log(img_text_logits[pos_ind]))-torch.multiply(contrast_label,torch.log(text_img_logits[pos_ind]))
             loss_recon = torch.mean(loss_recon)
         else:
