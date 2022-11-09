@@ -87,7 +87,7 @@ class ReferDataset(data.Dataset):
         this_ref_id = self.ref_ids[index]
         this_img_id = self.refer.getImgIds(this_ref_id)
         this_img = self.refer.Imgs[this_img_id[0]]
-
+        img_path = os.path.join(self.refer.IMAGE_DIR, this_img['file_name'])
         img = Image.open(os.path.join(self.refer.IMAGE_DIR, this_img['file_name'])).convert("RGB")
 
         ref = self.refer.loadRefs(this_ref_id)
@@ -101,7 +101,7 @@ class ReferDataset(data.Dataset):
         if self.image_transforms is not None:
             # resize, from PIL to tensor, and mean and std normalization
             img, target = self.image_transforms(img, annot)
-
+        
         if self.eval_mode:
             embedding = []
             att = []
@@ -118,4 +118,4 @@ class ReferDataset(data.Dataset):
             tensor_embeddings = self.input_ids[index][choice_sent]
             attention_mask = self.attention_masks[index][choice_sent]
 
-        return img, target, tensor_embeddings, attention_mask
+        return img, target, tensor_embeddings, attention_mask, ref

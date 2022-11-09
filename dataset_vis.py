@@ -16,7 +16,8 @@ import utils
 import numpy as np
 from PIL import Image
 import torch.nn.functional as F
-
+import cv2
+import mmcv
 
 def get_dataset(image_set, transform, args):
     from data.dataset_refer_bert import ReferDataset
@@ -41,6 +42,15 @@ def get_transform(args):
 
 
 def main(args):
+    save_output_mask_dir = 'vis_output_mask_data'
+    save_target_dir = 'vis_target_data'
+    save_text_embedding_dir = 'vis_pickel_data'
+    if not os.path.exists(save_output_mask_dir):
+        os.mkdir(save_output_mask_dir)
+    if not os.path.exists(save_target_dir):
+        os.mkdir(save_target_dir)
+    if not os.path.exists(save_text_embedding_dir):
+        os.mkdir(save_text_embedding_dir)
     device = torch.device(args.device)
     dataset_test, _ = get_dataset(args.split, get_transform(args=args), args)
     test_sampler = torch.utils.data.SequentialSampler(dataset_test)
@@ -69,7 +79,9 @@ def main(args):
     model.eval()
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader_test, 100, header):
-            image, target, sentences, attentions = data
+            image, target, sentences, attentions, ref = data
+
+            filename = ref[0]['file_name'][0]
             image, target, sentences, attentions = image.to(device), target.to(device), \
                                                    sentences.to(device), attentions.to(device)
             sentences = sentences.squeeze(1)
@@ -86,9 +98,11 @@ def main(args):
 
                 output = output.cpu()
                 output_mask = output.argmax(1).data.numpy()
-            import pdb
-            pdb.set_trace()
-                
+
+                cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.png'),output_mask[0]*255)
+                cv2.imwrite(os.path.join(save_target_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.png'),target[0]*255)
+                mmcv.dump(embedding,os.path.join(save_text_embedding_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.pkl'))
+
 if __name__ == "__main__":
     from args import get_parser
     parser = get_parser()
