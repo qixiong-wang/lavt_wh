@@ -81,6 +81,8 @@ def evaluate(model, data_loader, bert_model, device):
     mIoU = np.mean(mean_IoU)
     print('Final results:')
     print('Mean IoU is %.2f\n' % (mIoU*100.))
+    import pdb
+    pdb.set_trace()
     results_str = ''
     for n_eval_iou in range(len(eval_seg_iou_list)):
         results_str += '    precision@%s = %.2f\n' % \
