@@ -22,6 +22,7 @@ class _LAVTSimpleDecode(nn.Module):
         features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
         x, vis_embedding = self.classifier(x_c4, x_c3, x_c2, x_c1, target)
+
         vis_embedding = vis_embedding.squeeze()
 
         if len(vis_embedding.shape)>1: ### eval
@@ -33,18 +34,20 @@ class _LAVTSimpleDecode(nn.Module):
             l_feat_last = torch.stack(l_feat_last)
             l_feat_last = F.normalize(l_feat_last,dim=1)
 
-            vis_embedding_queue, l_feat_queue = self.memory_queue(vis_embedding,l_feat_last)
+            # vis_embedding_queue, l_feat_queue = self.memory_queue(vis_embedding,l_feat_last)
 
             contrast_label = torch.eye(batch_size).cuda(l_feat_last.device)
+            # img_text_logits = F.softmax(10*torch.matmul(vis_embedding_queue,l_feat_last.permute(1,0)),dim=0)
+            # text_img_logits = F.softmax(10*torch.matmul(l_feat_queue,vis_embedding.permute(1,0)),dim=0)
+            img_text_logits = F.softmax(10*torch.matmul(vis_embedding,l_feat_last.permute(1,0)),dim=0)
+            text_img_logits = F.softmax(10*torch.matmul(l_feat_last,vis_embedding.permute(1,0)),dim=0)
+            # pos_ind = torch.arange(batch_size).cuda(l_feat_last.device) + self.memory_queue.tail - batch_size
+            # pos_ind = torch.where(pos_ind<0,pos_ind+self.number_of_instance,pos_ind)
+            # loss_recon = -torch.multiply(contrast_label,torch.log(img_text_logits[pos_ind]))-torch.multiply(contrast_label,torch.log(text_img_logits[pos_ind]))
 
-            img_text_logits = F.softmax(10*torch.matmul(vis_embedding_queue,l_feat_last.permute(1,0)),dim=0)
-            text_img_logits = F.softmax(10*torch.matmul(l_feat_queue,vis_embedding.permute(1,0)),dim=0)
-            pos_ind = torch.arange(batch_size).cuda(l_feat_last.device) + self.memory_queue.tail - batch_size
-            pos_ind = torch.where(pos_ind<0,pos_ind+self.number_of_instance,pos_ind)
-            import pdb 
-            pdb.set_trace()
-            loss_recon = -torch.multiply(contrast_label,torch.log(img_text_logits[pos_ind]))-torch.multiply(contrast_label,torch.log(text_img_logits[pos_ind]))
+            loss_recon = -torch.multiply(contrast_label,torch.log(img_text_logits))-torch.multiply(contrast_label,torch.log(text_img_logits))
             loss_recon = torch.mean(loss_recon)
+
         else:
             loss_recon = 0
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)

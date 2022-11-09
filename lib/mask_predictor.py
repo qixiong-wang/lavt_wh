@@ -270,14 +270,13 @@ class SimpleDecoding(nn.Module):
         output = self.conv1_1(x)
 
         vis_embedding = self.conv_emb(x)
+
         vis_embedding = F.interpolate(input=vis_embedding, size=(x_c3.size(-2), x_c3.size(-1)), mode='bilinear', align_corners=True)
         b, c, h, w = vis_embedding.shape
-        
         vis_embedding = vis_embedding.permute(0, 2, 3, 1).contiguous().view(b, -1, c)
-
         cls_seg_feat = self.text_emb.expand(output.size(0), -1, -1)
-
         text_embedding = self.transformer(vis_embedding,cls_seg_feat)
+
         # text_embedding = self.transformer_cross_attention_layers(cls_seg_feat,vis_embedding)
         # text_embedding = self.transformer_self_attention_layers(text_embedding)
         # text_embedding = self.transformer_ffn_layers(text_embedding)
@@ -288,7 +287,7 @@ class SimpleDecoding(nn.Module):
         #     embedding = torch.sum(torch.multiply(target,embedding),dim=[2,3])/torch.sum(torch.sum(target,dim=[2,3]))
         
         # else:
-        #     embedding = F.adaptive_avg_pool2d(embedding,output_size=1)
+            # text_embedding = F.adaptive_avg_pool2d(vis_embedding,output_size=1)
 
 
         # output = x
