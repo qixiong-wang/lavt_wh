@@ -1,0 +1,99 @@
+--2022-11-09 07:12:21--  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Resolving drive.google.com (drive.google.com)... 31.13.88.169, 2001::c710:9c27
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:16:43--  (try: 2)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:21:06--  (try: 3)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:25:31--  (try: 4)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:29:56--  (try: 5)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:34:23--  (try: 6)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:38:51--  (try: 7)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:43:18--  (try: 8)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:47:47--  (try: 9)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:52:16--  (try:10)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 07:56:48--  (try:11)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:01:18--  (try:12)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:05:48--  (try:13)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:10:19--  (try:14)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:14:49--  (try:15)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:19:19--  (try:16)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:23:50--  (try:17)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:28:20--  (try:18)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:32:50--  (try:19)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... failed: Connection timed out.
+Retrying.
+
+--2022-11-09 08:37:21--  (try:20)  https://drive.google.com/u/0/uc?id=13D-OeEOijV8KTC3BkFP-gOJymc6DLwVT
+Connecting to drive.google.com (drive.google.com)|31.13.88.169|:443... failed: Connection timed out.
+Connecting to drive.google.com (drive.google.com)|2001::c710:9c27|:443... 

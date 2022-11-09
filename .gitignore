@@ -1,0 +1,16 @@
+
+data
+.vscode
+.idea
+__pycache__/*
+# custom
+*.pkl
+# Pytorch
+*.json
+refer/data/*
+*.jpg
+*.pth
+*.png
+vis*
+*.zip
+*.log
