@@ -1,9 +1,10 @@
 import torch
 import torch.nn as nn
-from .mask_predictor import SimpleDecoding
+from .mask_predictor_ori import SimpleDecoding
 # from .backbone import MultiModalSwinTransformer
-from .backbone_vis import MultiModalSwinTransformer
-from ._utils import LAVT, LAVTOne, LAVT_vis
+from .backbone_ori import MultiModalSwinTransformer
+# from ._utils import LAVT, LAVTOne, LAVT_vis
+from ._utils_ori import LAVT, LAVTOne
 
 __all__ = ['lavt', 'lavt_one']
 
@@ -58,8 +59,8 @@ def _segm_lavt(pretrained, args):
         backbone.init_weights()
 
     # model_map = [SimpleDecoding, LAVT_kcdecode]
-    # model_map = [SimpleDecoding, LAVT]
-    model_map = [SimpleDecoding, LAVT_vis]
+    model_map = [SimpleDecoding, LAVT]
+    # model_map = [SimpleDecoding, LAVT_vis]
     # model_map = [SimpleDecoding, MulLAVT]
 
     classifier = model_map[0](8*embed_dim)

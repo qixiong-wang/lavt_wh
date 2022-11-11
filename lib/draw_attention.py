@@ -86,7 +86,7 @@ def visulize_attention1(idx, img, pred):
     m4 = m4.repeat([3], axis=2)
     f0 = np.concatenate((img, m4), axis=1)
     f1 = Image.fromarray(f0)
-    f1.save('/mnt/lustre/huyutao.vendor/record/lavit/vis_img_persons/' + str(idx).zfill(6) + '.jpg')
+    f1.save('/mnt/lustre/huyutao.vendor/record/lavit/vis_img_try/' + str(idx).zfill(6) + '.jpg')
 
 
     # m5 = Image.fromarray(m3)
