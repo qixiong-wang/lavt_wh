@@ -25,13 +25,32 @@ class _LAVTSimpleDecode(nn.Module):
         visulize_attention1(img0, x)
         # pdb.set_trace()
 
-        result = x
-
-
-
         return x
 
 class LAVT(_LAVTSimpleDecode):
+    pass
+
+
+class _LAVTSimpleDecodevis(nn.Module):
+    def __init__(self, backbone, classifier):
+        super(_LAVTSimpleDecodevis, self).__init__()
+        self.backbone = backbone
+        self.classifier = classifier
+
+    def forward(self, id_num, x, l_feats, l_mask):
+        img0 = x
+
+        input_shape = x.shape[-2:]
+        features = self.backbone(x, l_feats, l_mask)
+        x_c1, x_c2, x_c3, x_c4 = features
+        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        visulize_attention1(id_num, img0, x)
+        # pdb.set_trace()
+
+        return x
+
+class LAVT_vis(_LAVTSimpleDecodevis):
     pass
 
 # class _LAVTSimpleDecode(nn.Module):

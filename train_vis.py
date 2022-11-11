@@ -96,7 +96,7 @@ def evaluate(model, data_loader, bert_model):
                 last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]
                 embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
                 attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
-                output = model(image, embedding, l_mask=attentions)
+                output = model(total_its, image, embedding, l_mask=attentions)
             else:
                 output = model(image, sentences, l_mask=attentions)
 
