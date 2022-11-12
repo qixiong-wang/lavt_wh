@@ -42,9 +42,9 @@ def get_transform(args):
 
 
 def main(args):
-    save_output_mask_dir = 'vis_output_mask_data'
-    save_target_dir = 'vis_target_data'
-    save_text_embedding_dir = 'vis_pickel_data'
+    save_output_mask_dir = 'vis_output_mask_refcoco+_val_data'
+    save_target_dir = 'vis_target_refcoco+_val_data'
+    save_text_embedding_dir = 'vis_pickel_refcoco+_val_data'
     if not os.path.exists(save_output_mask_dir):
         os.mkdir(save_output_mask_dir)
     if not os.path.exists(save_target_dir):
@@ -84,6 +84,7 @@ def main(args):
             filename = ref[0]['file_name'][0]
             image, target, sentences, attentions = image.to(device), target.to(device), \
                                                    sentences.to(device), attentions.to(device)
+
             sentences = sentences.squeeze(1)
             attentions = attentions.squeeze(1)
             target = target.cpu().data.numpy()
