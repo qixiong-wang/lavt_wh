@@ -112,5 +112,6 @@ class SimpleDecoding(nn.Module):
         x = self.conv2_2(x)
         x = self.bn2_2(x)
         x = self.relu2_2(x)
+        # print(4444444444444444444)
 
         return self.conv1_1(x)

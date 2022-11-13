@@ -1,6 +1,7 @@
 import datetime
 import os
 import time
+import random
 
 import torch
 import torch.utils.data
@@ -35,6 +36,12 @@ def get_dataset(image_set, transform, args):
 
     return ds, num_classes
 
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 # IoU calculation for validation
 def IoU(pred, gt):
@@ -330,5 +337,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # set up distributed learning
     utils.init_distributed_mode(args)
+    setup_seed(3407)
     print('Image size: {}'.format(str(args.img_size)))
     main(args)

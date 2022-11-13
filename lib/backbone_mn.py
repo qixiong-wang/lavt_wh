@@ -957,6 +957,7 @@ class RefineLanSim(nn.Module):
         # pdb.set_trace()
         B, HW = x.size(0), x.size(1)
         n_l = l.size(2)
+        # print(11111111111111)
         # l_mask = l_mask.permute(0, 2, 1)  # (B, N_l, 1) -> (B, 1, N_l)
 
         l1 = self.f_query(l) #(B, int_channels, N_l)
