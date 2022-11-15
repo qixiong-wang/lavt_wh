@@ -131,7 +131,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
     header = 'Epoch: [{}]'.format(epoch)
     train_loss = 0
     total_its = 0
-
+    # embedding_queue = []
     for data in metric_logger.log_every(data_loader, print_freq, header):
         total_its += 1
         image, target, sentences, attentions = data
@@ -143,11 +143,16 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         sentences = sentences.squeeze(1)
         attentions = attentions.squeeze(1)
 
+
         if bert_model is not None:
             last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]  # (6, 10, 768)
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-
+            # embedding_queue.append(embedding)
+            # print(len(embedding_queue))
+            # if len(embedding_queue)==53:
+            #     import pdb
+            #     pdb.set_trace()
             output, loss_recon = model(image, embedding, attentions, target)
         else:
             output = model(image, sentences, target, l_mask=attentions)
@@ -255,11 +260,10 @@ def main(args):
             {'params': backbone_decay},
             {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
             # the following are the parameters of bert
-            {"params": reduce(operator.concat,
-                              [[p for p in single_bert_model.encoder.layer[i].parameters()
-                                if p.requires_grad] for i in range(10)])},
+            # {"params": reduce(operator.concat,"
+            #                   [[p for p in single_bert_model.encoder.layer[i].parameters()
+            #                     if p.requires_g"rad] for i in range(10)])},
         ]
-
     else:
         params_to_optimize = [
             {'params': backbone_no_decay, 'weight_decay': 0.0},
