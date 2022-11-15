@@ -16,6 +16,26 @@ class _LAVTSimpleDecode(nn.Module):
     def forward(self, x, l_feats, l_mask):
         input_shape = x.shape[-2:]
         features = self.backbone(x, l_feats, l_mask)
+        x_c1, x_c2, x_c3, x_c4 = features
+        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        # pdb.set_trace()
+
+        return x
+
+class LAVT(_LAVTSimpleDecode):
+    pass
+
+
+class _LAVTSimpleDecodeconloss(nn.Module):
+    def __init__(self, backbone, classifier):
+        super(_LAVTSimpleDecodeconloss, self).__init__()
+        self.backbone = backbone
+        self.classifier = classifier
+
+    def forward(self, x, l_feats, l_mask):
+        input_shape = x.shape[-2:]
+        features = self.backbone(x, l_feats, l_mask)
         l_new, (x_c1, x_c2, x_c3, x_c4) = features
         defea, x = self.classifier(x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
@@ -23,7 +43,7 @@ class _LAVTSimpleDecode(nn.Module):
 
         return l_new, defea, x
 
-class LAVT(_LAVTSimpleDecode):
+class LAVTconloss(_LAVTSimpleDecodeconloss):
     pass
 
 class _LAVTSimpleDecode_cycle(nn.Module):

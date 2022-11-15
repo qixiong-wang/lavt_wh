@@ -491,7 +491,7 @@ class MultiModalSwinTransformer(nn.Module):
                 out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
                 outs.append(out)
 
-        return tuple(outs)
+        return l, tuple(outs)
 
     def train(self, mode=True):
         """Convert the model into training mode while keep layers freezed."""
@@ -556,10 +556,9 @@ class MMBasicLayer(nn.Module):
             nn.Tanh()
         )
         self.W_l = nn.Sequential(
-            nn.Conv1d(768, 768, 1, 1),
-            nn.GELU(),
-            nn.Conv1d(768, 768, 1, 1),
-            nn.Tanh()
+            nn.Conv1d(768, 768, 1, 1),  # the init function sets bias to 0 if bias is True
+            # nn.LayerNorm(768),
+            nn.GELU()
         )
         # patch merging layer
         if downsample is not None:
@@ -610,8 +609,7 @@ class MMBasicLayer(nn.Module):
         x_residual, l_residual = self.fusion(x, l, l_mask)
         # apply a gate on the residual
         x = x + (self.res_gate(x_residual) * x_residual)
-        # l = l + self.W_l(l_residual)
-        l = l + (self.W_l(l_residual) * l)
+        l = l + self.W_l(l_residual)
 
         if self.downsample is not None:
             x_down = self.downsample(x, H, W)
@@ -706,7 +704,6 @@ class SpatialImageLanguageAttention(nn.Module):
             nn.InstanceNorm1d(self.out_channels),
         )
 
-
     def forward(self, x, l, l_mask):
         # x shape: (B, H*W, v_in_channels)
         # l input shape: (B, l_in_channels, N_l)
@@ -715,7 +712,7 @@ class SpatialImageLanguageAttention(nn.Module):
         # x = rearrange(x, 'b (h w) c -> b c h w', h=int(math.sqrt(x.shape[1])))
         # x = self.dy_conv(x)
         # x = rearrange(x, '  b c h w -> b (h w) c')
-        # pdb.set_trace()
+        pdb.set_trace()
 
         B, HW = x.size(0), x.size(1)
         x = x.permute(0, 2, 1)  # (B, key_channels, H*W)
@@ -769,7 +766,6 @@ class SpatialImageInteraction(nn.Module):
         self.f_value = nn.Sequential(
             nn.Conv1d(self.l_in_channels, self.value_channels, kernel_size=1, stride=1),
         )
-
         # Values: visual features: (B, H*W, v_in_channels)
         self.f_value_v = nn.Sequential(
             nn.Conv1d(self.v_in_channels, self.value_channels_l, kernel_size=1, stride=1),
@@ -781,12 +777,10 @@ class SpatialImageInteraction(nn.Module):
             nn.Conv1d(self.value_channels, self.out_channels, kernel_size=1, stride=1),
             nn.InstanceNorm1d(self.out_channels),
         )
-
-
         self.W2 = nn.Sequential(
             nn.Conv1d(self.l_in_channels, self.l_in_channels, kernel_size=1, stride=1),
+            # nn.LayerNorm(self.l_in_channels)
         )
-
         self.num_heads = num_heads
         self.refineimg11 = RefineVisualSim(self.v_in_channels, self.l_in_channels, self.key_channels, kernel=1, num_heads=1)
         self.refineimg33 = RefineVisualSim(self.v_in_channels, self.l_in_channels, self.key_channels, kernel=3, num_heads=1)
@@ -819,7 +813,6 @@ class SpatialImageInteraction(nn.Module):
         out_v = out_v.permute(0, 2, 1, 3).contiguous().reshape(B, HW, self.value_channels)  # (B, H*W, value_channels)
         out_v = out_v.permute(0, 2, 1)  # (B, value_channels, HW)
         out_v = self.W(out_v)  # (B, value_channels, HW)
-        # out_v = self.layernorm3(out_v) # (B, HW, value_channels)
         out_v = out_v.permute(0, 2, 1)  # (B, HW, value_channels)
 
         x_v = x.permute(0, 2, 1)  # (B, v_in_channels, H*W)
@@ -837,7 +830,6 @@ class SpatialImageInteraction(nn.Module):
         out_l = out_l.permute(0, 2, 1, 3).contiguous().reshape(B, n_l, self.l_in_channels)  # (B, N_l, l_in_channels)
         out_l = out_l.permute(0, 2, 1)  # (B, l_in_channels, N_l)
         out_l = self.W2(out_l)  # (B, l_in_channels, N_l)
-        # pdb.set_trace()
 
         return out_v, out_l
 
@@ -864,6 +856,7 @@ class RefineVisualSim(nn.Module):
         # avoid any form of spatial normalization because a sentence contains many padding 0s
         self.f_key = nn.Sequential(
             nn.Conv1d(self.l_in_channels, self.key_channels, kernel_size=1, stride=1),
+            # nn.LayerNorm(self.key_channels)
         )
 
         # Queries: visual features: (B, H*W, v_in_channels)
@@ -871,12 +864,10 @@ class RefineVisualSim(nn.Module):
             nn.Conv1d(self.v_in_channels, self.int_channels, kernel_size=1, stride=1),
             nn.InstanceNorm1d(self.int_channels),
         )
-
         self.f_query2 = nn.Sequential(
             nn.Conv1d(self.int_channels * (self.kernel ** 2), self.key_channels, kernel_size=1, stride=1),
             nn.InstanceNorm1d(self.key_channels),
         )
-
 
 
     def forward(self, x, l, l_mask):
@@ -893,7 +884,7 @@ class RefineVisualSim(nn.Module):
         l_mask = l_mask.permute(0, 2, 1)  # (B, N_l, 1) -> (B, 1, N_l)
 
         x = x.permute(0, 2, 1)  # (B, v_in_channels, H*W)
-        x1 = self.f_query(x) # (B, v_in_channels, H*W)
+        x1 = self.f_query(x)
         x1 = rearrange(x1, 'b c (h w) -> b c h w', h=int(math.sqrt(x.shape[2])))
         x2 = F.unfold(x1, kernel_size=self.kernel, stride=1, padding=self.kernel//2)
         # x2 = rearrange(x1, 'b c h w -> b c (h w)')
@@ -914,6 +905,7 @@ class RefineVisualSim(nn.Module):
 
         sim_map = sim_map + (1e4 * l_mask - 1e4)  # assign a very small number to padding positions
         sim_map = F.softmax(sim_map, dim=-1)  # (B, num_heads, h*w, N_l)
+
 
         return sim_map
 
@@ -947,12 +939,12 @@ class RefineLanSim(nn.Module):
         # avoid any form of spatial normalization because a sentence contains many padding 0s
         self.f_query = nn.Sequential(
             nn.Conv1d(self.l_in_channels, self.int_channels, kernel_size=1, stride=1),
+            # nn.LayerNorm(self.int_channels),
         )
-
         self.f_query2 = nn.Sequential(
             nn.Conv1d(self.int_channels * self.kernel[0], self.l_in_channels, kernel_size=1, stride=1),
+            # nn.LayerNorm(self.l_in_channels),
         )
-
 
 
     def forward(self, x, l, l_mask):
@@ -973,7 +965,6 @@ class RefineLanSim(nn.Module):
         l1 = F.pad(l1, (0, 0, self.kernel[0]//2, (self.kernel[0]-1)//2), mode='replicate') #(B, int_channels, N_l+, 1)
         l2 = F.unfold(l1, kernel_size=(self.kernel[0], 1), stride=1) #(B, int_channels*self.kernel[0], N_l)
         query = self.f_query2(l2) #(B, l_in_channels, N_l)
-        # pdb.set_trace()
         query = query.permute(0, 2, 1) #(B, N_l, l_in_channels)
 
 

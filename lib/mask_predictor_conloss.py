@@ -112,7 +112,5 @@ class SimpleDecoding(nn.Module):
 
         defea = self.crossfuse2(defea, x)
 
-        # pdb.set_trace()
-
 
         return defea, self.conv1_1(x)
