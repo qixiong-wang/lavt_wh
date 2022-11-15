@@ -5,6 +5,7 @@ import time
 import torch
 import torch.utils.data
 from torch import nn
+import random
 
 from functools import reduce
 import operator
@@ -37,6 +38,13 @@ def copy_dirs(target_path):
 #     LOG_FOUT.write(out_str+'\n')
 #     LOG_FOUT.flush()
 #     print(out_str)
+
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 def get_dataset(image_set, transform, args):
     from data.dataset_refer_bert import ReferDataset
@@ -156,6 +164,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
                                                sentences.cuda(non_blocking=True),\
                                                attentions.cuda(non_blocking=True)
 
+        # pdb.set_trace()
         sentences = sentences.squeeze(1)
         attentions = attentions.squeeze(1)
 
@@ -308,7 +317,7 @@ def main(args):
     else:
         resume_epoch = -999
 
-    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
@@ -346,6 +355,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # set up distributed learning
     utils.init_distributed_mode(args)
+    setup_seed(3407)
     log_dir = os.path.join(args.rootpath, args.model_id)
     LOG_FOUT = open(os.path.join(log_dir, 'log_train.txt'), 'a')
     resume_flag = os.path.exists(os.path.join(log_dir, 'model_best_') + args.model_id + '.pth')

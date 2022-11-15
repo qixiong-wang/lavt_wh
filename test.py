@@ -1,5 +1,6 @@
 import datetime
 import os
+import pdb
 import time
 
 import torch
@@ -12,6 +13,7 @@ import torchvision
 from lib import segmentation
 import transforms as T
 import utils
+import random
 
 import numpy as np
 from PIL import Image
@@ -29,6 +31,12 @@ def get_dataset(image_set, transform, args):
     num_classes = 2
     return ds, num_classes
 
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 def evaluate(model, data_loader, bert_model, device):
     model.eval()
@@ -45,19 +53,37 @@ def evaluate(model, data_loader, bert_model, device):
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader, 100, header):
             image, target, sentences, attentions = data
+
+
             image, target, sentences, attentions = image.to(device), target.to(device), \
                                                    sentences.to(device), attentions.to(device)
             sentences = sentences.squeeze(1)
             attentions = attentions.squeeze(1)
             target = target.cpu().data.numpy()
+            image_flip = torch.flip(image, dims=[-1])
+
+            tensor_embeddings = sentences
+            if 2157 in tensor_embeddings:
+                # print(11111111111111)
+                tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
+            elif 2187 in tensor_embeddings:
+                tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
+                # print(bb, tensor_embeddings)
+            sentences_flip = tensor_embeddings
+            # pdb.set_trace()
+
             for j in range(sentences.size(-1)):
                 if bert_model is not None:
                     last_hidden_states = bert_model(sentences[:, :, j], attention_mask=attentions[:, :, j])[0]
+                    last_hidden_states_flip = bert_model(sentences_flip[:, :, j], attention_mask=attentions[:, :, j])[0]
                     embedding = last_hidden_states.permute(0, 2, 1)
-                    lan_new, defea, output = model(image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
+                    embedding_flip = last_hidden_states_flip.permute(0, 2, 1)
+                    lan_new, defea, output1 = model(image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
+                    lan_new, defea, output_flip = model(image_flip, embedding_flip, l_mask=attentions[:, :, j].unsqueeze(-1))
                 else:
                     lan_new, defea, output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
 
+                output = (output1 + torch.flip(output_flip, dims=[-1])) / 2
                 output = output.cpu()
                 output_mask = output.argmax(1).data.numpy()
                 I, U = computeIoU(output_mask, target)
@@ -135,5 +161,6 @@ if __name__ == "__main__":
     from args import get_parser
     parser = get_parser()
     args = parser.parse_args()
+    setup_seed(3407)
     print('Image size: {}'.format(str(args.img_size)))
     main(args)
