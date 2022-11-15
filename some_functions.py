@@ -22,10 +22,10 @@ class Nce_contrast_loss(nn.Module):
         """
         #print(inputs.shape, targets.shape)
         vv = vis_feature # [B 768]
-        la = lan_feature # [B, 768, 20]
+        la1 = lan_feature[:, :, 0] # [B, 768, 20]
 
         vv1 = F.normalize(vv, dim=1)
-        la1 = self.adpool(la.unsqueeze(3)).view(la.shape[0], la.shape[1])
+        # la1 = self.adpool(la.unsqueeze(3)).view(la.shape[0], la.shape[1])
         la1 = F.normalize(la1, dim=1)
         score1 = torch.sum(vv1 * la1, dim=1) * self.team
         score11 = torch.exp(score1)

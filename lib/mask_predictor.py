@@ -82,7 +82,7 @@ class SimpleDecoding(nn.Module):
         x = self.conv2_4(x)
         x = self.bn2_4(x)
         x = self.relu2_4(x) # [B, 512, 30, 30]
-        pdb.set_trace()
+        # pdb.set_trace()
 
         # pre1 = self.cydecode1(x) ## pre1 [B, 512, 30, 30]
 
