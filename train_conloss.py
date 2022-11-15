@@ -164,6 +164,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
                                                sentences.cuda(non_blocking=True),\
                                                attentions.cuda(non_blocking=True)
 
+        # pdb.set_trace()
         sentences = sentences.squeeze(1)
         attentions = attentions.squeeze(1)
 

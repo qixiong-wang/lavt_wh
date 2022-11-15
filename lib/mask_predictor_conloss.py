@@ -111,7 +111,6 @@ class SimpleDecoding(nn.Module):
         x = self.relu2_2(x)  # [B, 512, 120, 120]
 
         defea = self.crossfuse2(defea, x)
-        # pdb.set_trace()
 
 
         return defea, self.conv1_1(x)

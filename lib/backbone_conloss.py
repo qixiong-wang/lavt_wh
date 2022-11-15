@@ -906,6 +906,7 @@ class RefineVisualSim(nn.Module):
         sim_map = sim_map + (1e4 * l_mask - 1e4)  # assign a very small number to padding positions
         sim_map = F.softmax(sim_map, dim=-1)  # (B, num_heads, h*w, N_l)
 
+
         return sim_map
 
 class RefineLanSim(nn.Module):
