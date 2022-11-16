@@ -41,7 +41,7 @@ def evaluate(model, data_loader, bert_model, device):
     seg_total = 0
     mean_IoU = []
     header = 'Test:'
-
+    scales = [0.75,1,1.25]
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader, 100, header):
             image, target, sentences, attentions = data
@@ -50,13 +50,25 @@ def evaluate(model, data_loader, bert_model, device):
             sentences = sentences.squeeze(1)
             attentions = attentions.squeeze(1)
             target = target.cpu().data.numpy()
+            
+            ms_images = []
+            outputs = []
+            for scale in scales:
+                scale_image = F.interpolate(image,scale_factor=scale,mode='bilinear')
+                ms_images.append(scale_image)
+
             for j in range(sentences.size(-1)):
                 if bert_model is not None:
                     last_hidden_states = bert_model(sentences[:, :, j], attention_mask=attentions[:, :, j])[0]
                     embedding = last_hidden_states.permute(0, 2, 1)
-                    output = model(image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
+                    for scale_image in ms_images:
+                        output = model(scale_image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
+                        outputs.append(F.interpolate(output,size=(image.shape[2],image.shape[3])))
+
                 else:
                     output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
+
+                output = torch.mean(torch.cat(outputs,dim=0),dim=0,keepdim=True)
 
                 output = output.cpu()
                 output_mask = output.argmax(1).data.numpy()
