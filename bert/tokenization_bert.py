@@ -187,8 +187,7 @@ class BertTokenizer(PreTrainedTokenizer):
                 "model use `tokenizer = BertTokenizer.from_pretrained(PRETRAINED_MODEL_NAME)`".format(vocab_file)
             )
         self.vocab = load_vocab(vocab_file)
-        import pdb
-        pdb.set_trace()
+
         self.ids_to_tokens = collections.OrderedDict([(ids, tok) for tok, ids in self.vocab.items()])
         self.do_basic_tokenize = do_basic_tokenize
         if do_basic_tokenize:

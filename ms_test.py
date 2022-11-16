@@ -41,7 +41,8 @@ def evaluate(model, data_loader, bert_model, device):
     seg_total = 0
     mean_IoU = []
     header = 'Test:'
-    scales = [0.75,1,1.25]
+    # scales = [0.75,1,1.25]
+    scales = [0.75,1]
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader, 100, header):
             image, target, sentences, attentions = data
