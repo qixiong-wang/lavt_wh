@@ -1,6 +1,5 @@
 import datetime
 import os
-import pdb
 import time
 
 import torch
@@ -14,6 +13,7 @@ from lib import segmentation
 import transforms as T
 import utils
 import random
+
 
 import numpy as np
 from PIL import Image
@@ -49,54 +49,63 @@ def evaluate(model, data_loader, bert_model, device):
     seg_total = 0
     mean_IoU = []
     header = 'Test:'
-
+    scales = [0.75,1,1.25]
+    # scales = [0.75, 1]
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader, 100, header):
             image, target, sentences, attentions = data
-
-            # image, target, sentences, attentions = image.to(device), target.to(device), \
-            #                                        sentences.to(device), attentions.to(device)
-
-            image, target, sentences, attentions = image.cuda(non_blocking=True),\
-                                                   target.cuda(non_blocking=True),\
-                                                   sentences.cuda(non_blocking=True),\
-                                                   attentions.cuda(non_blocking=True)
-
+            image, target, sentences, attentions = image.to(device), target.to(device), \
+                                                   sentences.to(device), attentions.to(device)
             sentences = sentences.squeeze(1)
             attentions = attentions.squeeze(1)
             target = target.cpu().data.numpy()
-            image_flip = torch.flip(image, dims=[-1])
 
-            # tensor_embeddings = sentences
-            # if 2157 in tensor_embeddings:
-            #     # print(11111111111111)
-            #     tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
-            # elif 2187 in tensor_embeddings:
-            #     tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
-            #     # print(bb, tensor_embeddings)
-            # sentences_flip = tensor_embeddings
-            # # pdb.set_trace()
+            tensor_embeddings = sentences
+            if 2157 in tensor_embeddings:
+                # print(11111111111111)
+                tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
+            elif 2187 in tensor_embeddings:
+                tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
+                # print(bb, tensor_embeddings)
+            sentences_flip = tensor_embeddings
+            # pdb.set_trace()
+
+
+            ms_images = []
+            outputs = []
+            outputs_flip = []
+            for scale in scales:
+                scale_image = F.interpolate(image, scale_factor=scale, mode='bilinear')
+                ms_images.append(scale_image)
 
             for j in range(sentences.size(-1)):
                 if bert_model is not None:
                     last_hidden_states = bert_model(sentences[:, :, j], attention_mask=attentions[:, :, j])[0]
-                    # last_hidden_states_flip = bert_model(sentences_flip[:, :, j], attention_mask=attentions[:, :, j])[0]
+                    last_hidden_states_flip = bert_model(sentences_flip[:, :, j], attention_mask=attentions[:, :, j])[0]
                     embedding = last_hidden_states.permute(0, 2, 1)
-                    # embedding_flip = last_hidden_states_flip.permute(0, 2, 1)
-                    lan_new, defea, output1 = model(image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
-                    # lan_new, defea, output_flip = model(image_flip, embedding_flip, l_mask=attentions[:, :, j].unsqueeze(-1))
-                else:
-                    lan_new, defea, output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
+                    embedding_flip = last_hidden_states_flip.permute(0, 2, 1)
+                    for scale_image in ms_images:
+                        image_flip = torch.flip(scale_image, dims=[-1])
+                        lan_new, defea, output = model(scale_image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
+                        lan_new, defea, output_flip = model(image_flip, embedding_flip, l_mask=attentions[:, :, j].unsqueeze(-1))
+                        outputs.append(F.interpolate(output, size=(image.shape[2], image.shape[3])))
+                        outputs_flip.append(F.interpolate(output_flip, size=(image.shape[2], image.shape[3])))
 
-                # output = (output1 + torch.flip(output_flip, dims=[-1])) / 2
-                output = output1
+                else:
+                    output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
+
+                output = torch.mean(torch.cat(outputs, dim=0), dim=0, keepdim=True)
+                output_flip = torch.mean(torch.cat(outputs_flip, dim=0), dim=0, keepdim=True)
+                output = (output + torch.flip(output_flip, dims=[-1])) / 2
+
+
                 output = output.cpu()
                 output_mask = output.argmax(1).data.numpy()
                 I, U = computeIoU(output_mask, target)
                 if U == 0:
                     this_iou = 0.0
                 else:
-                    this_iou = I*1.0/U
+                    this_iou = I * 1.0 / U
                 mean_IoU.append(this_iou)
                 cum_I += I
                 cum_U += U
@@ -112,7 +121,8 @@ def evaluate(model, data_loader, bert_model, device):
     mean_IoU = np.array(mean_IoU)
     mIoU = np.mean(mean_IoU)
     print('Final results:')
-    print('Mean IoU is %.2f\n' % (mIoU*100.))
+    print('Mean IoU is %.2f\n' % (mIoU * 100.))
+
     results_str = ''
     for n_eval_iou in range(len(eval_seg_iou_list)):
         results_str += '    precision@%s = %.2f\n' % \
@@ -144,7 +154,7 @@ def main(args):
     data_loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1,
                                                    sampler=test_sampler, num_workers=args.workers)
     print(args.model)
-    single_model = segmentation.__dict__[args.model](pretrained='',args=args)
+    single_model = segmentation.__dict__[args.model](pretrained='', args=args)
     checkpoint = torch.load(args.resume, map_location='cpu')
     single_model.load_state_dict(checkpoint['model'])
     model = single_model.to(device)
@@ -165,6 +175,7 @@ def main(args):
 
 if __name__ == "__main__":
     from args import get_parser
+
     parser = get_parser()
     args = parser.parse_args()
     setup_seed(3407)

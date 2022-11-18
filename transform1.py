@@ -16,8 +16,8 @@ class new_transform(object):
     def __call__(self, image, target):
         image, target = self.Resize(image, target)
         image, target, flip_flag = self.HorizontalFlip(image, target)
-        image, target = self.RandomResize(image, target)
-        image, target = self.RandomCrop(image, target)
+        # image, target = self.RandomResize(image, target)
+        # image, target = self.RandomCrop(image, target)
         image, target = self.ToTensor(image, target)
         image, target = self.Norm(image, target)
 

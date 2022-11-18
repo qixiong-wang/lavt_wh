@@ -39,7 +39,6 @@ class _LAVTSimpleDecodeconloss(nn.Module):
         l_new, (x_c1, x_c2, x_c3, x_c4) = features
         defea, x = self.classifier(x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-        # pdb.set_trace()
 
         return l_new, defea, x
 

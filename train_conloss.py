@@ -184,7 +184,8 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         loss_contra = contras_cri(defea, lan_new)
 
         loss_seg = criterion(output, target)
-        loss = loss_seg + loss_contra * 0.1
+        loss = loss_seg + loss_contra * 0
+        # loss = loss_seg
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()
         optimizer.step()
@@ -257,6 +258,7 @@ def main(args):
 
     # resume training
     if resume_flag:
+        # print(11111111111)
         checkpoint = torch.load(cp_path, map_location='cpu')
         single_model.load_state_dict(checkpoint['model'])
         if args.model != 'lavt_one':

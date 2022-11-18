@@ -112,5 +112,4 @@ class SimpleDecoding(nn.Module):
 
         defea = self.crossfuse2(defea, x)
 
-
         return defea, self.conv1_1(x)
