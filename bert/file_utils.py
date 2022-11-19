@@ -464,16 +464,24 @@ def hf_bucket_url(model_id: str, filename: str, use_cdn=True) -> str:
     are not shared between the two because the cached file's name contains
     a hash of the url.
     """
-    endpoint = '/mnt/petrelfs/huyutao/code/lavit_hu1/bert/'
-    # endpoint = CLOUDFRONT_DISTRIB_PREFIX if use_cdn else S3_BUCKET_PREFIX
+    endpoint = CLOUDFRONT_DISTRIB_PREFIX if use_cdn else S3_BUCKET_PREFIX
     legacy_format = "/" not in model_id
     if legacy_format:
-        return f"{endpoint}/{filename}"
-        # return f"{endpoint}/{model_id}-{filename}"
+        return f"{endpoint}/{model_id}-{filename}"
     else:
-        pdb.set_trace()
-        
         return f"{endpoint}/{model_id}/{filename}"
+
+    # endpoint = '/mnt/petrelfs/huyutao/code/lavit_hu1/bert/'
+    # # endpoint = CLOUDFRONT_DISTRIB_PREFIX if use_cdn else S3_BUCKET_PREFIX
+    # legacy_format = "/" not in model_id
+    # if legacy_format:
+    #     return f"{endpoint}/{filename}"
+    #     # return f"{endpoint}/{model_id}-{filename}"
+    # else:
+    #     pdb.set_trace()
+        
+    #     return f"{endpoint}/{model_id}/{filename}"
+    
     # if legacy_format:
     #     return f"{endpoint}/{model_id}-{filename}"
     # else:
