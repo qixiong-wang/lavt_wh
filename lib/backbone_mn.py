@@ -491,7 +491,7 @@ class MultiModalSwinTransformer(nn.Module):
                 out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
                 outs.append(out)
 
-        return tuple(outs)
+        return l, tuple(outs)
 
     def train(self, mode=True):
         """Convert the model into training mode while keep layers freezed."""
@@ -704,7 +704,6 @@ class SpatialImageLanguageAttention(nn.Module):
             nn.InstanceNorm1d(self.out_channels),
         )
 
-
     def forward(self, x, l, l_mask):
         # x shape: (B, H*W, v_in_channels)
         # l input shape: (B, l_in_channels, N_l)
@@ -767,28 +766,21 @@ class SpatialImageInteraction(nn.Module):
         self.f_value = nn.Sequential(
             nn.Conv1d(self.l_in_channels, self.value_channels, kernel_size=1, stride=1),
         )
-        self.layernorm1 = nn.LayerNorm(self.value_channels)
-
         # Values: visual features: (B, H*W, v_in_channels)
         self.f_value_v = nn.Sequential(
             nn.Conv1d(self.v_in_channels, self.value_channels_l, kernel_size=1, stride=1),
-            # nn.InstanceNorm1d(self.value_channels_l),
+            nn.InstanceNorm1d(self.value_channels_l),
         )
-        self.layernorm2 = nn.LayerNorm(self.value_channels_l)
 
         # Out projection
         self.W = nn.Sequential(
             nn.Conv1d(self.value_channels, self.out_channels, kernel_size=1, stride=1),
-            # nn.InstanceNorm1d(self.out_channels),
+            nn.InstanceNorm1d(self.out_channels),
         )
-        self.layernorm3 = nn.LayerNorm(self.out_channels)
-
-
         self.W2 = nn.Sequential(
             nn.Conv1d(self.l_in_channels, self.l_in_channels, kernel_size=1, stride=1),
+            # nn.LayerNorm(self.l_in_channels)
         )
-        self.layernorm4 = nn.LayerNorm(self.l_in_channels)
-
         self.num_heads = num_heads
         self.refineimg11 = RefineVisualSim(self.v_in_channels, self.l_in_channels, self.key_channels, kernel=1, num_heads=1)
         self.refineimg33 = RefineVisualSim(self.v_in_channels, self.l_in_channels, self.key_channels, kernel=3, num_heads=1)
@@ -806,8 +798,7 @@ class SpatialImageInteraction(nn.Module):
         n_l = l.size(2)
         l_mask1 = l_mask.permute(0, 2, 1)  # (B, N_l, 1) -> (B, 1, N_l)
 
-        value = self.f_value(l).transpose(1, 2)  # (B, N_l, self.value_channels)
-        value = self.layernorm1(value).transpose(1, 2) # (B, self.value_channels, N_l)
+        value = self.f_value(l)  # (B, self.value_channels, N_l)
         value = value * l_mask1  # (B, self.value_channels, N_l)
         n_l = value.size(-1)
         value = value.reshape(B, self.num_heads, self.value_channels // self.num_heads, n_l)
@@ -821,13 +812,11 @@ class SpatialImageInteraction(nn.Module):
         out_v = torch.matmul(sim_mapv, value.permute(0, 1, 3, 2))  # (B, num_heads, H*W, self.value_channels//num_heads)
         out_v = out_v.permute(0, 2, 1, 3).contiguous().reshape(B, HW, self.value_channels)  # (B, H*W, value_channels)
         out_v = out_v.permute(0, 2, 1)  # (B, value_channels, HW)
-        out_v = self.W(out_v).transpose(1, 2)  # (B, HW, value_channels)
-        out_v = self.layernorm3(out_v) # (B, HW, value_channels)
-        # out_v = out_v.permute(0, 2, 1)  # (B, HW, value_channels)
+        out_v = self.W(out_v)  # (B, value_channels, HW)
+        out_v = out_v.permute(0, 2, 1)  # (B, HW, value_channels)
 
         x_v = x.permute(0, 2, 1)  # (B, v_in_channels, H*W)
-        x_v = self.f_value_v(x_v).transpose(1, 2)  # (B, H*W, value_channels_l)
-        x_v = self.layernorm2(x_v).transpose(1, 2) # (B, value_channels_l, H*W)
+        x_v = self.f_value_v(x_v)  # (B, value_channels_l, H*W)
         value_v = x_v.reshape(B, self.num_heads, self.l_in_channels // self.num_heads, HW)
         # (b, num_heads, self.value_channels_l//self.num_heads, H*W)
 
@@ -840,8 +829,7 @@ class SpatialImageInteraction(nn.Module):
         out_l = torch.matmul(sim_mapl, value_v.permute(0, 1, 3, 2))  # (B, num_heads, N_l, self.l_in_channels//num_heads)
         out_l = out_l.permute(0, 2, 1, 3).contiguous().reshape(B, n_l, self.l_in_channels)  # (B, N_l, l_in_channels)
         out_l = out_l.permute(0, 2, 1)  # (B, l_in_channels, N_l)
-        out_l = self.W2(out_l).transpose(1, 2)  # (B, N_l, l_in_channels)
-        out_l = self.layernorm4(out_l).transpose(1, 2) # (B, l_in_channels, N_l)
+        out_l = self.W2(out_l)  # (B, l_in_channels, N_l)
 
         return out_v, out_l
 
@@ -868,22 +856,18 @@ class RefineVisualSim(nn.Module):
         # avoid any form of spatial normalization because a sentence contains many padding 0s
         self.f_key = nn.Sequential(
             nn.Conv1d(self.l_in_channels, self.key_channels, kernel_size=1, stride=1),
+            # nn.LayerNorm(self.key_channels)
         )
-        self.layernorm1 = nn.LayerNorm(self.key_channels)
 
         # Queries: visual features: (B, H*W, v_in_channels)
         self.f_query = nn.Sequential(
             nn.Conv1d(self.v_in_channels, self.int_channels, kernel_size=1, stride=1),
-            # nn.InstanceNorm1d(self.int_channels),
+            nn.InstanceNorm1d(self.int_channels),
         )
-        self.layernorm2 = nn.LayerNorm(self.int_channels)
-
         self.f_query2 = nn.Sequential(
             nn.Conv1d(self.int_channels * (self.kernel ** 2), self.key_channels, kernel_size=1, stride=1),
-            # nn.InstanceNorm1d(self.key_channels),
+            nn.InstanceNorm1d(self.key_channels),
         )
-        self.layernorm3 = nn.LayerNorm(self.key_channels)
-
 
 
     def forward(self, x, l, l_mask):
@@ -900,17 +884,14 @@ class RefineVisualSim(nn.Module):
         l_mask = l_mask.permute(0, 2, 1)  # (B, N_l, 1) -> (B, 1, N_l)
 
         x = x.permute(0, 2, 1)  # (B, v_in_channels, H*W)
-        x1 = self.f_query(x).transpose(1, 2)
-        x1 = self.layernorm2(x1).transpose(1, 2) # (B, v_in_channels, H*W)
+        x1 = self.f_query(x)
         x1 = rearrange(x1, 'b c (h w) -> b c h w', h=int(math.sqrt(x.shape[2])))
         x2 = F.unfold(x1, kernel_size=self.kernel, stride=1, padding=self.kernel//2)
         # x2 = rearrange(x1, 'b c h w -> b c (h w)')
 
-        query = self.f_query2(x2).transpose(1, 2)  # (B, H*W, key_channels) if Conv1D
-        query = self.layernorm3(query) # (B, H*W, key_channels)
-        # query = query.permute(0, 2, 1)  # (B, H*W, key_channels)
-        key = self.f_key(l).transpose(1, 2)  # (B, N_l, key_channels)
-        key = self.layernorm1(key).transpose(1, 2) # (B, key_channels, N_l)
+        query = self.f_query2(x2)  # (B, key_channels, H*W) if Conv1D
+        query = query.permute(0, 2, 1)  # (B, H*W, key_channels)
+        key = self.f_key(l)  # (B, key_channels, N_l)
         key = key * l_mask  # (B, key_channels, N_l)
         query = query.reshape(B, HW, self.num_heads, self.key_channels // self.num_heads).permute(0, 2, 1, 3)
         # (b, num_heads, H*W, self.key_channels//self.num_heads)
@@ -922,8 +903,20 @@ class RefineVisualSim(nn.Module):
         sim_map = (self.key_channels ** -.5) * sim_map  # scaled dot product
         # pdb.set_trace()
 
+        # #################################
+        # sim0 = torch.mean(sim_map, dim=-1)
+        # sum0 = ((1 + HW) * HW / 2) / sim_map.shape[2]
+        # index0 = torch.sort(sim0, dim=-1, descending=True)[1]
+        # index1 = torch.sort(index0, dim=-1)[1] + 1
+        # index2 = (index1 / sum0).unsqueeze(-1)
+        # #################################
+
         sim_map = sim_map + (1e4 * l_mask - 1e4)  # assign a very small number to padding positions
         sim_map = F.softmax(sim_map, dim=-1)  # (B, num_heads, h*w, N_l)
+
+        # #################################
+        # sim_map = sim_map * index2
+        # #################################
 
         return sim_map
 
@@ -950,22 +943,19 @@ class RefineLanSim(nn.Module):
         # Keys: visual features: (B, v_in_channels, #words)
         self.f_key = nn.Sequential(
             nn.Conv1d(self.v_in_channels, self.l_in_channels, kernel_size=1, stride=1),
-            # nn.InstanceNorm1d(self.l_in_channels),
+            nn.InstanceNorm1d(self.l_in_channels),
         )
-        self.layernorm1 = nn.LayerNorm(self.l_in_channels)
 
         # Queries: language features: (B, H*W, l_in_channels)
         # avoid any form of spatial normalization because a sentence contains many padding 0s
         self.f_query = nn.Sequential(
             nn.Conv1d(self.l_in_channels, self.int_channels, kernel_size=1, stride=1),
+            # nn.LayerNorm(self.int_channels),
         )
-        self.layernorm2 = nn.LayerNorm(self.int_channels)
-
         self.f_query2 = nn.Sequential(
             nn.Conv1d(self.int_channels * self.kernel[0], self.l_in_channels, kernel_size=1, stride=1),
+            # nn.LayerNorm(self.l_in_channels),
         )
-        self.layernorm3 = nn.LayerNorm(self.l_in_channels)
-
 
 
     def forward(self, x, l, l_mask):
@@ -981,20 +971,16 @@ class RefineLanSim(nn.Module):
         n_l = l.size(2)
         # l_mask = l_mask.permute(0, 2, 1)  # (B, N_l, 1) -> (B, 1, N_l)
 
-        l1 = self.f_query(l).transpose(1, 2)
-        l1 = self.layernorm2(l1).transpose(1, 2) #(B, int_channels, N_l)
+        l1 = self.f_query(l) #(B, int_channels, N_l)
         l1 = l1.unsqueeze(3) #(B, int_channels, N_l, 1)
         l1 = F.pad(l1, (0, 0, self.kernel[0]//2, (self.kernel[0]-1)//2), mode='replicate') #(B, int_channels, N_l+, 1)
         l2 = F.unfold(l1, kernel_size=(self.kernel[0], 1), stride=1) #(B, int_channels*self.kernel[0], N_l)
-        query = self.f_query2(l2).transpose(1, 2) #(B, N_l, l_in_channels)
-        query = self.layernorm3(query)
-        # pdb.set_trace()
-        # query = query.permute(0, 2, 1) #(B, N_l, l_in_channels)
+        query = self.f_query2(l2) #(B, l_in_channels, N_l)
+        query = query.permute(0, 2, 1) #(B, N_l, l_in_channels)
 
 
         x = x.permute(0, 2, 1)  # (B, v_in_channels, H*W)
-        key = self.f_key(x).transpose(1, 2)
-        key = self.layernorm1(key).transpose(1, 2) # (B, l_in_channels, H*W)
+        key = self.f_key(x) # (B, l_in_channels, H*W)
         query = query * l_mask  # (B, l_in_channels, N_l)
         query = query.reshape(B, n_l, self.num_heads, self.l_in_channels // self.num_heads).permute(0, 2, 1, 3)
         # (b, num_heads, N_l, self.l_in_channels//self.num_heads)
