@@ -13,3 +13,4 @@ bert/pytorch_model.bin
 *.png
 vis*
 *.zip
+*.pyc
