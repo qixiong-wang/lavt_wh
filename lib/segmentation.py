@@ -64,6 +64,7 @@ def _segm_lavt(pretrained, args):
     base_model = model_map[1]
 
     model = base_model(backbone, classifier)
+
     return model
 
 

@@ -59,8 +59,11 @@ class lan_cossim_fun(nn.Module):
         """
 
         maskf1 = mask_full.permute(0, 2, 1)
+        
         lanp1 = lanp * maskf1
         lanm1 = lanm * maskf1
+        lanp1 = lanp1.detach()
+
         score = self.cos(lanp1, lanm1)
         score1 = torch.sum(score, dim=-1)
         length = torch.sum(maskf1, dim=-1).squeeze(-1)
