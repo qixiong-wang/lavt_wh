@@ -1,0 +1,104 @@
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torch/distributed/launch.py:186: FutureWarning: The module torch.distributed.launch is deprecated
+and will be removed in future. Use torch.distributed.run.
+Note that --use_env is set by default in torch.distributed.run.
+If your script expects `--local_rank` argument to be set, please
+change it to read from `os.environ['LOCAL_RANK']` instead. See 
+https://pytorch.org/docs/stable/distributed.html#launch-utility for 
+further instructions
+
+  FutureWarning,
+WARNING:torch.distributed.run:*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+RANK and WORLD_SIZE in environment: 2/4
+RANK and WORLD_SIZE in environment: 1/4
+RANK and WORLD_SIZE in environment: 0/4
+RANK and WORLD_SIZE in environment: 3/4
+[W ProcessGroupNCCL.cpp:1569] Rank 0 using best-guess GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
+[W ProcessGroupNCCL.cpp:1569] Rank 3 using best-guess GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
+[W ProcessGroupNCCL.cpp:1569] Rank 2 using best-guess GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
+[W ProcessGroupNCCL.cpp:1569] Rank 1 using best-guess GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
+Image size: 480
+loading dataset refcoco into memory...
+creating index...
+index created.
+DONE (t=6.31s)
+loading dataset refcoco into memory...
+creating index...
+index created.
+DONE (t=7.49s)
+local rank 0 / global rank 0 successfully built train dataset.
+lavt
+Window size 12!
+Initializing Multi-modal Swin Transformer weights from ./pretrained_weights/swin_base_patch4_window12_384_22k.pth
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+Epoch: [0]  [   0/1766]  eta: 2:17:29  lr: 4.999957531123788e-05  loss_mask: 0.8006 (0.8006)  loss_recon: 13.0400 (13.0400)  time: 4.6712  data: 1.1176  max mem: 15626
+Epoch: [0]  [  10/1766]  eta: 1:21:24  lr: 4.9995328401571695e-05  loss_mask: 0.7168 (0.7220)  loss_recon: 7.7497 (8.5952)  time: 2.7818  data: 0.1074  max mem: 17946
+Epoch: [0]  [  20/1766]  eta: 1:18:03  lr: 4.999108145182085e-05  loss_mask: 0.6552 (0.6761)  loss_recon: 7.7399 (8.2806)  time: 2.5832  data: 0.0056  max mem: 17946
+Epoch: [0]  [  30/1766]  eta: 1:16:49  lr: 4.998683446198118e-05  loss_mask: 0.5890 (0.6351)  loss_recon: 7.9581 (8.2004)  time: 2.5856  data: 0.0055  max mem: 17946
+Epoch: [0]  [  40/1766]  eta: 1:15:54  lr: 4.9982587432048524e-05  loss_mask: 0.5306 (0.6102)  loss_recon: 7.9006 (8.1604)  time: 2.5924  data: 0.0061  max mem: 17946
+Epoch: [0]  [  50/1766]  eta: 1:15:12  lr: 4.9978340362018715e-05  loss_mask: 0.5017 (0.5839)  loss_recon: 8.0513 (8.2400)  time: 2.5903  data: 0.0059  max mem: 17946
+Epoch: [0]  [  60/1766]  eta: 1:14:34  lr: 4.99740932518876e-05  loss_mask: 0.4706 (0.5642)  loss_recon: 8.3933 (8.3115)  time: 2.5903  data: 0.0058  max mem: 17946

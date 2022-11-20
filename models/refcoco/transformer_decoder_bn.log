@@ -1,0 +1,146 @@
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torch/distributed/launch.py:186: FutureWarning: The module torch.distributed.launch is deprecated
+and will be removed in future. Use torch.distributed.run.
+Note that --use_env is set by default in torch.distributed.run.
+If your script expects `--local_rank` argument to be set, please
+change it to read from `os.environ['LOCAL_RANK']` instead. See 
+https://pytorch.org/docs/stable/distributed.html#launch-utility for 
+further instructions
+
+  FutureWarning,
+WARNING:torch.distributed.run:*****************************************
+Setting OMP_NUM_THREADS environment variable for each process to be 1 in default, to avoid your system being overloaded, please further tune the variable for optimal performance in your application as needed. 
+*****************************************
+RANK and WORLD_SIZE in environment: 2/4
+RANK and WORLD_SIZE in environment: 3/4
+RANK and WORLD_SIZE in environment: 0/4
+RANK and WORLD_SIZE in environment: 1/4
+[W ProcessGroupNCCL.cpp:1569] Rank 0 using best-guess GPU 0 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
+[W ProcessGroupNCCL.cpp:1569] Rank 1 using best-guess GPU 1 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
+[W ProcessGroupNCCL.cpp:1569] Rank 3 using best-guess GPU 3 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
+[W ProcessGroupNCCL.cpp:1569] Rank 2 using best-guess GPU 2 to perform barrier as devices used by this process are currently unknown. This can potentially cause a hang if this rank to GPU mapping is incorrect.Specify device_ids in barrier() to force use of a particular device.
+Image size: 480
+loading dataset refcoco into memory...
+creating index...
+index created.
+DONE (t=6.56s)
+loading dataset refcoco into memory...
+creating index...
+index created.
+DONE (t=7.68s)
+local rank 0 / global rank 0 successfully built train dataset.
+lavt
+Window size 12!
+Initializing Multi-modal Swin Transformer weights from ./pretrained_weights/swin_base_patch4_window12_384_22k.pth
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+/home/wangqx/anaconda3/envs/lavt/lib/python3.7/site-packages/torchvision/transforms/functional.py:387: UserWarning: Argument interpolation should be of type InterpolationMode instead of int. Please, use InterpolationMode enum.
+  "Argument interpolation should be of type InterpolationMode instead of int. "
+Epoch: [0]  [   0/1325]  eta: 7:31:24  lr: 4.999943396190816e-05  loss: 1.0071 (1.0071)  time: 20.4413  data: 1.0405  max mem: 19140
+Epoch: [0]  [  10/1325]  eta: 1:50:16  lr: 4.999377354182765e-05  loss: 0.9648 (0.9600)  time: 5.0313  data: 0.1036  max mem: 21430
+Epoch: [0]  [  20/1325]  eta: 1:34:26  lr: 4.998811305053659e-05  loss: 0.9361 (0.9477)  time: 3.5373  data: 0.0092  max mem: 21430
+Epoch: [0]  [  30/1325]  eta: 1:27:18  lr: 4.998245248802512e-05  loss: 0.9361 (0.9373)  time: 3.5031  data: 0.0083  max mem: 21430
+Epoch: [0]  [  40/1325]  eta: 1:24:20  lr: 4.997679185428339e-05  loss: 0.8282 (0.8684)  time: 3.5133  data: 0.0091  max mem: 21430
+Epoch: [0]  [  50/1325]  eta: 1:21:58  lr: 4.997113114930153e-05  loss: 0.6167 (0.8232)  time: 3.5667  data: 0.0097  max mem: 21430
+Epoch: [0]  [  60/1325]  eta: 1:20:00  lr: 4.996547037306967e-05  loss: 0.7636 (0.8445)  time: 3.5027  data: 0.0085  max mem: 21430
+Epoch: [0]  [  70/1325]  eta: 1:18:22  lr: 4.995980952557796e-05  loss: 0.9529 (0.8637)  time: 3.4649  data: 0.0084  max mem: 21430
+Epoch: [0]  [  80/1325]  eta: 1:17:19  lr: 4.995414860681652e-05  loss: 0.9329 (0.8640)  time: 3.5155  data: 0.0092  max mem: 21430
+Epoch: [0]  [  90/1325]  eta: 1:15:59  lr: 4.994848761677548e-05  loss: 0.8154 (0.8530)  time: 3.4970  data: 0.0090  max mem: 21430
+Epoch: [0]  [ 100/1325]  eta: 1:15:07  lr: 4.994282655544497e-05  loss: 0.7600 (0.8401)  time: 3.4899  data: 0.0088  max mem: 21430
+Epoch: [0]  [ 110/1325]  eta: 1:14:23  lr: 4.9937165422815115e-05  loss: 0.6785 (0.8258)  time: 3.5917  data: 0.0089  max mem: 21430
+Epoch: [0]  [ 120/1325]  eta: 1:13:33  lr: 4.993150421887602e-05  loss: 0.6636 (0.8155)  time: 3.5759  data: 0.0086  max mem: 21430
+Epoch: [0]  [ 130/1325]  eta: 1:12:46  lr: 4.992584294361782e-05  loss: 0.7047 (0.8091)  time: 3.5450  data: 0.0086  max mem: 21430
+Epoch: [0]  [ 140/1325]  eta: 1:12:00  lr: 4.9920181597030636e-05  loss: 0.7282 (0.8047)  time: 3.5453  data: 0.0092  max mem: 21430
+Epoch: [0]  [ 150/1325]  eta: 1:11:22  lr: 4.991452017910456e-05  loss: 0.7220 (0.8001)  time: 3.5790  data: 0.0091  max mem: 21430
+Epoch: [0]  [ 160/1325]  eta: 1:10:34  lr: 4.990885868982972e-05  loss: 0.7197 (0.7943)  time: 3.5570  data: 0.0090  max mem: 21430
+Epoch: [0]  [ 170/1325]  eta: 1:09:51  lr: 4.990319712919621e-05  loss: 0.6773 (0.7851)  time: 3.5100  data: 0.0092  max mem: 21430
+Epoch: [0]  [ 180/1325]  eta: 1:09:11  lr: 4.989753549719415e-05  loss: 0.6203 (0.7757)  time: 3.5532  data: 0.0089  max mem: 21430
+Epoch: [0]  [ 190/1325]  eta: 1:08:28  lr: 4.9891873793813625e-05  loss: 0.5895 (0.7646)  time: 3.5464  data: 0.0092  max mem: 21430
+Epoch: [0]  [ 200/1325]  eta: 1:07:46  lr: 4.988621201904475e-05  loss: 0.5812 (0.7565)  time: 3.5149  data: 0.0099  max mem: 21430
+Epoch: [0]  [ 210/1325]  eta: 1:07:07  lr: 4.9880550172877623e-05  loss: 0.6608 (0.7534)  time: 3.5405  data: 0.0095  max mem: 21430
+Epoch: [0]  [ 220/1325]  eta: 1:06:27  lr: 4.987488825530232e-05  loss: 0.7669 (0.7567)  time: 3.5490  data: 0.0089  max mem: 21430
+Epoch: [0]  [ 230/1325]  eta: 1:05:45  lr: 4.986922626630895e-05  loss: 0.7833 (0.7543)  time: 3.5081  data: 0.0090  max mem: 21430
+Epoch: [0]  [ 240/1325]  eta: 1:05:10  lr: 4.9863564205887604e-05  loss: 0.6909 (0.7570)  time: 3.5574  data: 0.0093  max mem: 21430
+Epoch: [0]  [ 250/1325]  eta: 1:04:31  lr: 4.985790207402836e-05  loss: 0.8495 (0.7617)  time: 3.5798  data: 0.0100  max mem: 21430
+Epoch: [0]  [ 260/1325]  eta: 1:03:48  lr: 4.98522398707213e-05  loss: 0.8586 (0.7654)  time: 3.4800  data: 0.0095  max mem: 21430
+Epoch: [0]  [ 270/1325]  eta: 1:03:14  lr: 4.984657759595651e-05  loss: 0.8586 (0.7687)  time: 3.5303  data: 0.0090  max mem: 21430
+Epoch: [0]  [ 280/1325]  eta: 1:02:35  lr: 4.984091524972407e-05  loss: 0.8887 (0.7741)  time: 3.5821  data: 0.0091  max mem: 21430
+Epoch: [0]  [ 290/1325]  eta: 1:01:56  lr: 4.983525283201406e-05  loss: 0.9741 (0.7846)  time: 3.5146  data: 0.0094  max mem: 21430
+Epoch: [0]  [ 300/1325]  eta: 1:01:20  lr: 4.982959034281654e-05  loss: 1.1110 (0.7954)  time: 3.5521  data: 0.0095  max mem: 21430
+Epoch: [0]  [ 310/1325]  eta: 1:00:46  lr: 4.98239277821216e-05  loss: 1.0944 (0.8047)  time: 3.6210  data: 0.0094  max mem: 21430
+Epoch: [0]  [ 320/1325]  eta: 1:00:05  lr: 4.981826514991929e-05  loss: 0.9842 (0.8089)  time: 3.5384  data: 0.0095  max mem: 21430
+Epoch: [0]  [ 330/1325]  eta: 0:59:28  lr: 4.981260244619969e-05  loss: 0.9203 (0.8103)  time: 3.4867  data: 0.0093  max mem: 21430
+Epoch: [0]  [ 340/1325]  eta: 0:58:52  lr: 4.980693967095285e-05  loss: 0.6453 (0.8035)  time: 3.5608  data: 0.0095  max mem: 21430
+Epoch: [0]  [ 350/1325]  eta: 0:58:13  lr: 4.9801276824168846e-05  loss: 0.6083 (0.7994)  time: 3.5318  data: 0.0096  max mem: 21430
+Epoch: [0]  [ 360/1325]  eta: 0:57:35  lr: 4.979561390583773e-05  loss: 0.5951 (0.7923)  time: 3.4900  data: 0.0093  max mem: 21430
+Epoch: [0]  [ 370/1325]  eta: 0:56:58  lr: 4.978995091594954e-05  loss: 0.4852 (0.7836)  time: 3.5223  data: 0.0092  max mem: 21430
+Epoch: [0]  [ 380/1325]  eta: 0:56:19  lr: 4.9784287854494354e-05  loss: 0.4446 (0.7743)  time: 3.4940  data: 0.0093  max mem: 21430
+Epoch: [0]  [ 390/1325]  eta: 0:55:39  lr: 4.977862472146221e-05  loss: 0.4090 (0.7643)  time: 3.4137  data: 0.0098  max mem: 21430
+Epoch: [0]  [ 400/1325]  eta: 0:55:03  lr: 4.977296151684315e-05  loss: 0.3826 (0.7549)  time: 3.4848  data: 0.0096  max mem: 21430
+Epoch: [0]  [ 410/1325]  eta: 0:54:27  lr: 4.9767298240627235e-05  loss: 0.4002 (0.7466)  time: 3.5606  data: 0.0091  max mem: 21430
+Epoch: [0]  [ 420/1325]  eta: 0:53:49  lr: 4.976163489280449e-05  loss: 0.3987 (0.7381)  time: 3.4909  data: 0.0089  max mem: 21430
+Epoch: [0]  [ 430/1325]  eta: 0:53:14  lr: 4.975597147336496e-05  loss: 0.3919 (0.7306)  time: 3.5324  data: 0.0094  max mem: 21430
+Epoch: [0]  [ 440/1325]  eta: 0:52:38  lr: 4.975030798229869e-05  loss: 0.3869 (0.7221)  time: 3.5831  data: 0.0093  max mem: 21430
+Epoch: [0]  [ 450/1325]  eta: 0:52:00  lr: 4.9744644419595706e-05  loss: 0.3627 (0.7153)  time: 3.5088  data: 0.0091  max mem: 21430
+Epoch: [0]  [ 460/1325]  eta: 0:51:23  lr: 4.973898078524604e-05  loss: 0.4112 (0.7091)  time: 3.4903  data: 0.0095  max mem: 21430
+Epoch: [0]  [ 470/1325]  eta: 0:50:48  lr: 4.973331707923971e-05  loss: 0.4112 (0.7024)  time: 3.5370  data: 0.0094  max mem: 21430
+Epoch: [0]  [ 480/1325]  eta: 0:50:11  lr: 4.972765330156676e-05  loss: 0.3742 (0.6956)  time: 3.5313  data: 0.0094  max mem: 21430

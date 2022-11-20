@@ -20,7 +20,6 @@ class _LAVTSimpleDecode(nn.Module):
         x_c1, x_c2, x_c3, x_c4 = features
         l1, x = self.classifier(l_feats1, x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-        pdb.set_trace()
 
         return l0, l1, x
 
