@@ -45,3 +45,29 @@ class Nce_contrast_loss(nn.Module):
 
         return final
 
+class lan_cossim_fun(nn.Module):
+    """cosine similarity function.
+
+    """
+    def __init__(self):
+        super(lan_cossim_fun, self).__init__()
+        self.cos = nn.CosineSimilarity(dim=1, eps=1e-6)
+
+
+    def forward(self, lanp, lanm, mask_full):
+        """
+        """
+
+        maskf1 = mask_full.permute(0, 2, 1)
+        lanp1 = lanp * maskf1
+        lanm1 = lanm * maskf1
+        score = self.cos(lanp1, lanm1)
+        score1 = torch.sum(score, dim=-1)
+        length = torch.sum(maskf1, dim=-1).squeeze(-1)
+        # pdb.set_trace()
+        final = 1 / torch.mean(score1 / length)
+        # pdb.set_trace()
+
+
+        return final
+

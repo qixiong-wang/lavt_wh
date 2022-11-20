@@ -13,7 +13,7 @@ artificial intelligence run rampant.
 '''
 
 blob = TextBlob(text)
-blob.tagsblob.tags           # [('The', 'DT'), ('titular', 'JJ'),
+blob.tags           # [('The', 'DT'), ('titular', 'JJ'),
                     #  ('threat', 'NN'), ('of', 'IN'), ...]
 
 blob.noun_phrases   # WordList(['titular threat', 'blob',

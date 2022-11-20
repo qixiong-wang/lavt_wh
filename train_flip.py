@@ -23,6 +23,7 @@ import torch.nn.functional as F
 
 import gc
 from collections import OrderedDict
+from some_functions import lan_cossim_fun
 
 
 def get_dataset(image_set, transform, args):
@@ -89,7 +90,7 @@ def evaluate(model, data_loader, bert_model):
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader, 100, header):
             total_its += 1
-            image, target, sentences, attentions = data
+            image, target, sentences, sentences1, attentions = data
             image, target, sentences, attentions = image.cuda(non_blocking=True),\
                                                    target.cuda(non_blocking=True),\
                                                    sentences.cuda(non_blocking=True),\
@@ -103,7 +104,8 @@ def evaluate(model, data_loader, bert_model):
                 last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]
                 embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
                 attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
-                output = model(image, embedding, l_mask=attentions)
+                embedding1 = embedding
+                lanp, lanm, output = model(image, embedding, embedding1, l_mask=attentions)
             else:
                 output = model(image, sentences, l_mask=attentions)
 
@@ -135,6 +137,7 @@ def evaluate(model, data_loader, bert_model):
 def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, print_freq,
                     iterations, bert_model):
     model.train()
+    cossim = lan_cossim_fun()
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value}'))
     header = 'Epoch: [{}]'.format(epoch)
@@ -143,20 +146,24 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
 
     for data in metric_logger.log_every(data_loader, print_freq, header):
         total_its += 1
-        image, target, sentences, attentions = data
-        image, target, sentences, attentions = image.cuda(non_blocking=True),\
+        image, target, sentences, sentences1, attentions = data
+        image, target, sentences, sentences1, attentions = image.cuda(non_blocking=True),\
                                                target.cuda(non_blocking=True),\
-                                               sentences.cuda(non_blocking=True),\
+                                               sentences.cuda(non_blocking=True), \
+                                               sentences1.cuda(non_blocking=True),\
                                                attentions.cuda(non_blocking=True)
 
         sentences = sentences.squeeze(1)
+        sentences1 = sentences1.squeeze(1)
         attentions = attentions.squeeze(1)
 
         if bert_model is not None:
             last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]  # (6, 10, 768)
+            last_hidden_states1 = bert_model(sentences1, attention_mask=attentions)[0]  # (6, 10, 768)
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
+            embedding1 = last_hidden_states1.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-            output = model(image, embedding, l_mask=attentions)
+            lanp, lanm, output = model(image, embedding, embedding1, l_mask=attentions)
             # pdb.set_trace()
         else:
             output = model(image, sentences, l_mask=attentions)
@@ -167,7 +174,9 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         # target120 = torch.tensor(target, dtype=torch.float32)
         # target120 = torch.tensor(adp120(target120), dtype=torch.int64)
 
-        loss = criterion(output, target)
+        loss_lansim = cossim(lanp, lanm, attentions)
+        loss_seg = criterion(output, target)
+        loss = loss_seg + loss_lansim * 0.1
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()
         optimizer.step()
@@ -177,6 +186,8 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         train_loss += loss.item()
         iterations += 1
         metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
+        metric_logger.update(loss_seg=loss_seg.item(), lr=optimizer.param_groups[0]["lr"])
+        metric_logger.update(loss_lansim=loss_lansim.item(), lr=optimizer.param_groups[0]["lr"])
         # metric_logger.update(loss0=loss.item())
         # metric_logger.update(loss60=loss60.item())
         # metric_logger.update(loss120=loss120.item())
@@ -299,7 +310,7 @@ def main(args):
     else:
         resume_epoch = -999
 
-    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)

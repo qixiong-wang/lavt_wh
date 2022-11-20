@@ -3,6 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 import pdb
 from collections import OrderedDict
+from .lan_decoder import simple_lan_transformer
 
 class CycleDecode(nn.Module):
     def __init__(self, in_dims):
@@ -71,7 +72,9 @@ class SimpleDecoding(nn.Module):
 
         self.conv1_1 = nn.Conv2d(hidden_size, 2, 1)
 
-    def forward(self, x_c4, x_c3, x_c2, x_c1):
+        self.lan_func = simple_lan_transformer(hidden_size, lan_size=768)
+
+    def forward(self, lan, x_c4, x_c3, x_c2, x_c1):
         # fuse Y4 and Y3
         if x_c4.size(-2) < x_c3.size(-2) or x_c4.size(-1) < x_c3.size(-1):
             x_c4 = F.interpolate(input=x_c4, size=(x_c3.size(-2), x_c3.size(-1)), mode='bilinear', align_corners=True)
@@ -99,6 +102,7 @@ class SimpleDecoding(nn.Module):
         x = self.relu2_3(x)
 
         # pre2 = self.cydecode2(x) ## pre1 [B, 512, 60, 60]
+        new_lan = self.lan_func(x, lan)
 
         # fuse top-down features and Y1 features
         if x.size(-2) < x_c1.size(-2) or x.size(-1) < x_c1.size(-1):
@@ -114,4 +118,4 @@ class SimpleDecoding(nn.Module):
         x = self.relu2_2(x)
         # print(4444444444444444444)
 
-        return self.conv1_1(x)
+        return new_lan, self.conv1_1(x)

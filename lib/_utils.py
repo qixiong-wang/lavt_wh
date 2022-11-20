@@ -14,16 +14,16 @@ class _LAVTSimpleDecode(nn.Module):
         self.backbone = backbone
         self.classifier = classifier
 
-    def forward(self, x, l_feats, l_mask):
+    def forward(self, x, l_feats, l_feats1, l_mask):
 
         input_shape = x.shape[-2:]
-        features = self.backbone(x, l_feats, l_mask)
+        l0, features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
-        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        l1, x = self.classifier(l_feats1, x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
         # pdb.set_trace()
 
-        return x
+        return l0, l1, x
 
 class LAVT(_LAVTSimpleDecode):
     pass
