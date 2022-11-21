@@ -5,7 +5,26 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from bert.modeling_bert import BertModel
+from .draw_attention import visulize_attention1
 
+
+# class _LAVTSimpleDecode(nn.Module):
+#     def __init__(self, backbone, classifier):
+#         super(_LAVTSimpleDecode, self).__init__()
+#         self.backbone = backbone
+#         self.classifier = classifier
+#
+#     def forward(self, id_num, x, l_feats, l_mask):
+#
+#         img0 = x
+#         input_shape = x.shape[-2:]
+#         features = self.backbone(x, l_feats, l_mask)
+#         x_c1, x_c2, x_c3, x_c4 = features
+#         x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+#         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+#         visulize_attention1(id_num, img0, x)
+#
+#         return x
 
 class _LAVTSimpleDecode(nn.Module):
     def __init__(self, backbone, classifier):
@@ -14,12 +33,12 @@ class _LAVTSimpleDecode(nn.Module):
         self.classifier = classifier
 
     def forward(self, x, l_feats, l_mask):
+
         input_shape = x.shape[-2:]
         features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
         x = self.classifier(x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-        # pdb.set_trace()
 
         return x
 
