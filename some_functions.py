@@ -62,15 +62,13 @@ class lan_cossim_fun(nn.Module):
         
         lanp1 = lanp * maskf1
         lanm1 = lanm * maskf1
-        # lanp1 = lanp1.detach()
-
-        score = self.cos(lanp1, lanm1)
+        lanp1_clone = lanp1.detach()
+        score = self.cos(lanp1_clone, lanm1)
         score1 = torch.sum(score, dim=-1)
         length = torch.sum(maskf1, dim=-1).squeeze(-1)
         # pdb.set_trace()
         final = 1 / torch.mean(score1 / length)
         # pdb.set_trace()
-
 
         return final
 

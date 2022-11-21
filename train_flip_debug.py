@@ -170,7 +170,8 @@ def train_one_epoch(model, criterion, cossim, optimizer, data_loader, lr_schedul
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             embedding1 = last_hidden_states1.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-            lanp, lanm, output = model(image, embedding, embedding1, l_mask=attentions)
+            loss_lansim, output = model(image, embedding, embedding1, l_mask=attentions)
+
             # pdb.set_trace()
         else:
             output = model(image, sentences, l_mask=attentions)
@@ -180,18 +181,18 @@ def train_one_epoch(model, criterion, cossim, optimizer, data_loader, lr_schedul
         # target60 = torch.tensor(adp60(target60), dtype=torch.int64)
         # target120 = torch.tensor(target, dtype=torch.float32)
         # target120 = torch.tensor(adp120(target120), dtype=torch.int64)
-        MyConvNetVis = make_dot(output, params=dict(list(model.named_parameters()) + [('image', image),('embedding',embedding),('embedding1',embedding1)]))
-        MyConvNetVis.format = "png"
-        # 指定文件生成的文件夹
-        MyConvNetVis.directory = "data"
-        # 生成文件
+        # MyConvNetVis = make_dot(output, params=dict(list(model.named_parameters()) + [('image', image),('embedding',embedding),('embedding1',embedding1)]))
+        # MyConvNetVis.format = "png"
+        # # 指定文件生成的文件夹
+        # MyConvNetVis.directory = "data"
+        # # 生成文件
 
-        MyConvNetVis.render(filename='2',format='pdf')
-        import pdb
-        pdb.set_trace()
+        # MyConvNetVis.render(filename='2',format='pdf')
+        # import pdb
+        # pdb.set_trace()
         # MyConvNetVis.view()
 
-        loss_lansim = cossim(lanp, lanm, attentions)
+        # loss_lansim = cossim(lanp, lanm, attentions)
         loss_seg = criterion(output, target)
         loss = loss_seg + loss_lansim * 0.1
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
