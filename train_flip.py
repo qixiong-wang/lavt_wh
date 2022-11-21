@@ -19,7 +19,6 @@ from pringfile import log_string
 import numpy as np
 import shutil, glob
 from transform1 import new_transform
-from some_functions import lan_cossim_fun
 
 import torch.nn.functional as F
 
@@ -112,7 +111,7 @@ def evaluate(model, data_loader, bert_model):
                 embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
                 attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
                 embedding1 = embedding
-                lanp, lanm, output = model(image, embedding, embedding1, l_mask=attentions)
+                loss_lansim, output = model(image, embedding, embedding1, l_mask=attentions)
             else:
                 output = model(image, sentences, l_mask=attentions)
 
@@ -141,7 +140,7 @@ def evaluate(model, data_loader, bert_model):
     return 100 * iou, 100 * cum_I / cum_U
 
 
-def train_one_epoch(model, criterion, cossim, optimizer, data_loader, lr_scheduler, epoch, print_freq,
+def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, print_freq,
                     iterations, bert_model):
     model.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
@@ -169,7 +168,7 @@ def train_one_epoch(model, criterion, cossim, optimizer, data_loader, lr_schedul
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             embedding1 = last_hidden_states1.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-            lanp, lanm, output = model(image, embedding, embedding1, l_mask=attentions)
+            loss_lansim, output = model(image, embedding, embedding1, l_mask=attentions)
             # pdb.set_trace()
         else:
             output = model(image, sentences, l_mask=attentions)
@@ -180,7 +179,7 @@ def train_one_epoch(model, criterion, cossim, optimizer, data_loader, lr_schedul
         # target120 = torch.tensor(target, dtype=torch.float32)
         # target120 = torch.tensor(adp120(target120), dtype=torch.int64)
 
-        loss_lansim = cossim(lanp, lanm, attentions)
+        # loss_lansim = cossim(lanp, lanm, attentions)
         loss_seg = criterion(output, target)
         loss = loss_seg + loss_lansim * 0.1
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
@@ -308,7 +307,6 @@ def main(args):
     start_time = time.time()
     iterations = 0
     best_oIoU = -0.1
-    cossim = lan_cossim_fun()
 
     # resume training (optimizer, lr scheduler, and the epoch)
     if resume_flag:
@@ -318,11 +316,11 @@ def main(args):
     else:
         resume_epoch = -999
 
-    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
-        train_one_epoch(model, criterion, cossim, optimizer, data_loader, lr_scheduler, epoch, args.print_freq,
+        train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, args.print_freq,
                         iterations, bert_model)
         iou, overallIoU = evaluate(model, data_loader_test, bert_model)
 

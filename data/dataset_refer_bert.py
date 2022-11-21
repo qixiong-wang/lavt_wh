@@ -180,4 +180,3 @@ class ReferDataset(data.Dataset):
             # print(tensor_embeddings.shape)
 
         return img, target, tensor_embeddings, tensor_embeddings1, attention_mask
-686896
