@@ -46,6 +46,26 @@ class LAVT(_LAVTSimpleDecode):
     pass
 
 
+class _LAVTSimpleDecode_vismatrix(nn.Module):
+    def __init__(self, backbone, classifier):
+        super(_LAVTSimpleDecode_vismatrix, self).__init__()
+        self.backbone = backbone
+        self.classifier = classifier
+
+    def forward(self, x, l_feats, l_mask, file_name, sentence):
+
+        input_shape = x.shape[-2:]
+        features = self.backbone(x, l_feats, l_mask, file_name, sentence)
+        x_c1, x_c2, x_c3, x_c4 = features
+        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+
+        return x
+
+class LAVTvm(_LAVTSimpleDecode_vismatrix):
+    pass
+
+
 class _LAVTSimpleDecodeconloss(nn.Module):
     def __init__(self, backbone, classifier):
         super(_LAVTSimpleDecodeconloss, self).__init__()

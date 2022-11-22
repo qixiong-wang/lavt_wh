@@ -85,7 +85,7 @@ def main(args):
     with torch.no_grad():
         # data_dir = 'refer/data/images/mscoco/images/train2014/'
         data_dir = '/mnt/petrelfs/huyutao/dataset/coco/train2014/'
-        filename = 'COCO_train2014_000000555771.jpg'
+        filename = 'COCO_train2014_000000575461.jpg'
         # image = mmcv.imread(os.path.join(data_dir,filename))
         image = Image.open(os.path.join(data_dir, filename)).convert("RGB")
         transform = get_transform(args)
@@ -101,7 +101,7 @@ def main(args):
 
         image, img1 = transform(image, image)
 
-        sentence_raw = 'right zebra and left zebra'
+        sentence_raw = 'woman and man'
         max_tokens = 20
         tokenizer = BertTokenizer.from_pretrained(args.bert_tokenizer)
         sentences = tokenizer.encode(text=sentence_raw, add_special_tokens=True)
@@ -125,7 +125,7 @@ def main(args):
             last_hidden_states = bert_model(padded_sentences, attention_mask=attentions)[0]
 
             embedding = last_hidden_states.permute(0, 2, 1)
-            output = model(image.unsqueeze(0), embedding, attentions.unsqueeze(-1))
+            output = model(image.unsqueeze(0), embedding, attentions.unsqueeze(-1), filename, sentence_raw)
         else:
             output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
 
