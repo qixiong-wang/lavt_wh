@@ -86,12 +86,20 @@ def visulize_attention1(idx, img, pred):
     m4 = m4.repeat([3], axis=2)
     f0 = np.concatenate((img, m4), axis=1)
     f1 = Image.fromarray(f0)
-    f1.save('/mnt/lustre/huyutao.vendor/record/lavit/vis_img_try/' + str(idx).zfill(6) + '.jpg')
+
+    save_output_dir = '/mnt/lustre/huyutao.vendor/record/lavit/vis_lavtori/'
+    if not os.path.exists(save_output_dir):
+        # import pdb
+        # pdb.set_trace()
+        os.mkdir(save_output_dir)
+    f1.save(save_output_dir + str(idx).zfill(6) + '.jpg')
+
+    # f1.save('/mnt/lustre/huyutao.vendor/record/lavit/vis_img_try/' + str(idx).zfill(6) + '.jpg')
 
 
     # m5 = Image.fromarray(m3)
     # m5.save('./pred.jpg')
-    pdb.set_trace()
+    # pdb.set_trace()
 
     # mask = mask.squeeze(0)
     # mask = mask.squeeze(0)

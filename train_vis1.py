@@ -13,7 +13,7 @@ from bert.tokenization_bert import BertTokenizer
 from lib import segmentation
 import transforms as T
 import utils
-
+import pdb
 import numpy as np
 from PIL import Image
 import torch.nn.functional as F
@@ -85,14 +85,23 @@ def main(args):
     with torch.no_grad():
         # data_dir = 'refer/data/images/mscoco/images/train2014/'
         data_dir = '/mnt/lustre/share_data/huyutao/coco2014/train2014/'
-        filename = 'COCO_train2014_000000380440.jpg'
+        filename = 'COCO_train2014_000000006747.jpg'
         # image = mmcv.imread(os.path.join(data_dir,filename))
         image = Image.open(os.path.join(data_dir, filename)).convert("RGB")
         transform = get_transform(args)
 
+        mean = [0.485, 0.456, 0.406]
+        std = [0.229, 0.224, 0.225]
+        mean = np.array(mean)
+        mean = np.expand_dims(mean, 1)
+        mean = np.expand_dims(mean, 2)
+        std = np.array(std)
+        std = np.expand_dims(std, 1)
+        std = np.expand_dims(std, 2)
+
         image, img1 = transform(image, image)
 
-        sentence_raw = 'person'
+        sentence_raw = 'girl at left and girl at right'
         max_tokens = 20
         tokenizer = BertTokenizer.from_pretrained(args.bert_tokenizer)
         sentences = tokenizer.encode(text=sentence_raw, add_special_tokens=True)
@@ -104,7 +113,7 @@ def main(args):
         padded_sentences[:len(sentences)] = sentences
         attentions[:len(sentences)] = [1] * len(sentences)
 
-        image = torch.cat((image, image), dim=2)
+        # image = torch.cat((image, image), dim=2)
 
         padded_sentences = torch.tensor(padded_sentences).unsqueeze(0)
         attentions = torch.tensor(attentions).unsqueeze(0)
@@ -122,9 +131,27 @@ def main(args):
 
         output = output.cpu()
         output_mask = output.argmax(1).data.numpy()
+        output_mask = output_mask.squeeze(0)
 
-        cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg', '_') + 'person.jpg'),
-                    output_mask[0] * 255)
+        output_mask = output_mask[:, :, np.newaxis]
+        # pdb.set_trace()
+        output_mask = output_mask.repeat([3], axis=2)*255
+        output_mask = np.uint8(output_mask)
+
+
+        img0 = np.array(image.cpu())
+        img0 = (img0 * std + mean) * 255
+        img0 = img0.transpose(1, 2, 0)
+        img0 = np.uint8(img0)
+
+        # pdb.set_trace()
+        f0 = np.concatenate((img0, output_mask), axis=1)
+        f1 = Image.fromarray(f0)
+        f1.save(os.path.join(save_output_mask_dir, filename.replace('.jpg', '_') + sentence_raw + '.jpg'))
+
+
+        # cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg', '_') + sentence_raw + '.jpg'),
+        #             output_mask[0] * 255)
 
         print('well done')
 

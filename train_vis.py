@@ -25,7 +25,7 @@ from collections import OrderedDict
 
 
 def get_dataset(image_set, transform, args):
-    from data.dataset_refer_bert1 import ReferDataset
+    from data.dataset_vis import ReferDataset
     ds = ReferDataset(args,
                       split=image_set,
                       image_transforms=transform,
@@ -82,7 +82,7 @@ def evaluate(model, data_loader, bert_model):
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader, 100, header):
             total_its += 1
-            image, target, sentences, attentions, raw = data
+            image, target, sentences, attentions = data
             image, target, sentences, attentions = image.cuda(non_blocking=True),\
                                                    target.cuda(non_blocking=True),\
                                                    sentences.cuda(non_blocking=True),\

@@ -3,8 +3,8 @@ import torch.nn as nn
 from .mask_predictor_ori import SimpleDecoding
 # from .backbone import MultiModalSwinTransformer
 from .backbone_ori import MultiModalSwinTransformer
-# from ._utils import LAVT, LAVTOne, LAVT_vis
-from ._utils_ori import LAVT, LAVTOne
+from ._utils import LAVT, LAVTOne, LAVT_vis
+# from ._utils_ori import LAVT, LAVTOne
 
 __all__ = ['lavt', 'lavt_one']
 
