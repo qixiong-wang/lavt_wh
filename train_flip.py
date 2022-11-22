@@ -5,6 +5,7 @@ import time
 import torch
 import torch.utils.data
 from torch import nn
+import random
 
 from functools import reduce
 import operator
@@ -36,6 +37,12 @@ def copy_dirs(target_path):
 #     LOG_FOUT.write(out_str+'\n')
 #     LOG_FOUT.flush()
 #     print(out_str)
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 def get_dataset(image_set, transform, args):
     from data.dataset_refer_bert import ReferDataset
@@ -354,6 +361,7 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # set up distributed learning
     utils.init_distributed_mode(args)
+    setup_seed(3407)
     log_dir = os.path.join(args.rootpath, args.model_id)
     LOG_FOUT = open(os.path.join(log_dir, 'log_train.txt'), 'a')
     resume_flag = os.path.exists(os.path.join(log_dir, 'model_best_') + args.model_id + '.pth')
