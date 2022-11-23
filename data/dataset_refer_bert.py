@@ -39,12 +39,19 @@ class ReferDataset(data.Dataset):
         self.max_tokens = 20
 
         ref_ids = self.refer.getRefIds(split=self.split)
-        img_ids = self.refer.getImgIds(ref_ids)
 
-        all_imgs = self.refer.Imgs
-        self.imgs = list(all_imgs[i] for i in img_ids)
+        self.augref_idx_dict = {}
+        self.imgid_ref_dict = {}
+        for ref_id in ref_ids:
+            try:
+                self.imgid_ref_dict[self.refer.Refs[ref_id]['image_id']].append(ref_id)
+            except:
+                self.imgid_ref_dict[self.refer.Refs[ref_id]['image_id']]=[ref_id]
+
+
+        # self.imgs_ref_dict = list(all_imgs[i] for i in img_ids)
+
         self.ref_ids = ref_ids
-
         self.input_ids = []
         self.attention_masks = []
         self.tokenizer = BertTokenizer.from_pretrained(args.bert_tokenizer)
@@ -52,6 +59,9 @@ class ReferDataset(data.Dataset):
         self.eval_mode = eval_mode
         # if we are testing on a dataset, test all sentences of an object;
         # o/w, we are validating during training, randomly sample one sentence for efficiency
+        max_ref_id = max(ref_ids)
+
+
         for r in ref_ids:
             ref = self.refer.Refs[r]
 
@@ -77,6 +87,34 @@ class ReferDataset(data.Dataset):
             self.input_ids.append(sentences_for_ref)
             self.attention_masks.append(attentions_for_ref)
 
+
+        self.org_len=len(self.ref_ids)
+        if split == 'train':
+            for img_id_ref in self.imgid_ref_dict:
+                if len(self.imgid_ref_dict[img_id_ref])>=2:
+                    ref_ids = random.sample(self.imgid_ref_dict[img_id_ref],2)
+                    max_ref_id+=1
+                    self.augref_idx_dict[max_ref_id]=ref_ids
+
+                    sentences_for_ref = []
+                    attentions_for_ref = []
+                    for num in range(4):
+                        try:
+                            sentence_concat = (self.refer.Refs[ref_ids[0]]['sentences'][num//2]['raw']+' and '+self.refer.Refs[ref_ids[1]]['sentences'][num%2]['raw'])
+                            input_ids = self.tokenizer.encode(text=sentence_concat, add_special_tokens=True)
+
+                            # truncation of tokens
+                            input_ids = input_ids[:self.max_tokens]
+                            padded_input_ids[:len(input_ids)] = input_ids
+                            attention_mask[:len(input_ids)] = [1]*len(input_ids)
+                            sentences_for_ref.append(torch.tensor(padded_input_ids).unsqueeze(0))
+                            attentions_for_ref.append(torch.tensor(attention_mask).unsqueeze(0))
+                        except:
+                            pass
+                    self.ref_ids.append(max_ref_id)
+                    self.input_ids.append(sentences_for_ref)
+                    self.attention_masks.append(attentions_for_ref)
+        
     def get_classes(self):
         return self.classes
 
@@ -84,17 +122,28 @@ class ReferDataset(data.Dataset):
         return len(self.ref_ids)
 
     def __getitem__(self, index):
-        this_ref_id = self.ref_ids[index]
+
+        if index<self.org_len:
+            this_ref_id = self.ref_ids[index]
+        else:
+            this_ref_id = self.augref_idx_dict[self.ref_ids[index]]
+
         this_img_id = self.refer.getImgIds(this_ref_id)
         this_img = self.refer.Imgs[this_img_id[0]]
 
         img = Image.open(os.path.join(self.refer.IMAGE_DIR, this_img['file_name'])).convert("RGB")
-
-        ref = self.refer.loadRefs(this_ref_id)
-
-        ref_mask = np.array(self.refer.getMask(ref[0])['mask'])
-        annot = np.zeros(ref_mask.shape)
-        annot[ref_mask == 1] = 1
+        try:
+            ref = self.refer.loadRefs(this_ref_id)
+            ref_mask = np.array(self.refer.getMask(ref[0])['mask'])
+            annot = np.zeros(ref_mask.shape)
+            annot[ref_mask == 1] = 1
+        except:
+            this_ref_id = self.augref_idx_dict[index]
+            ref_mask_0 = np.array(self.refer.getMask(self.refer.Refs[this_ref_id[0]])['mask'])
+            ref_mask_1 = np.array(self.refer.getMask(self.refer.Refs[this_ref_id[1]])['mask'])
+            annot = np.zeros(ref_mask_0.shape)
+            annot[ref_mask_0 == 1] = 1
+            annot[ref_mask_1 == 1] = 1
 
         annot = Image.fromarray(annot.astype(np.uint8), mode="P")
 
