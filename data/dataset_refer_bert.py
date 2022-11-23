@@ -125,26 +125,22 @@ class ReferDataset(data.Dataset):
 
         if index<self.org_len:
             this_ref_id = self.ref_ids[index]
-        else:
-            this_ref_id = self.augref_idx_dict[self.ref_ids[index]]
-
-        this_img_id = self.refer.getImgIds(this_ref_id)
-        this_img = self.refer.Imgs[this_img_id[0]]
-
-        img = Image.open(os.path.join(self.refer.IMAGE_DIR, this_img['file_name'])).convert("RGB")
-        try:
             ref = self.refer.loadRefs(this_ref_id)
             ref_mask = np.array(self.refer.getMask(ref[0])['mask'])
             annot = np.zeros(ref_mask.shape)
             annot[ref_mask == 1] = 1
-        except:
-            this_ref_id = self.augref_idx_dict[index]
+        else:
+            this_ref_id = self.augref_idx_dict[self.ref_ids[index]]
             ref_mask_0 = np.array(self.refer.getMask(self.refer.Refs[this_ref_id[0]])['mask'])
             ref_mask_1 = np.array(self.refer.getMask(self.refer.Refs[this_ref_id[1]])['mask'])
             annot = np.zeros(ref_mask_0.shape)
             annot[ref_mask_0 == 1] = 1
             annot[ref_mask_1 == 1] = 1
 
+        this_img_id = self.refer.getImgIds(this_ref_id)
+        this_img = self.refer.Imgs[this_img_id[0]]
+
+        img = Image.open(os.path.join(self.refer.IMAGE_DIR, this_img['file_name'])).convert("RGB")
         annot = Image.fromarray(annot.astype(np.uint8), mode="P")
 
         if self.image_transforms is not None:
