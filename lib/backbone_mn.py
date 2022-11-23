@@ -904,18 +904,18 @@ class RefineVisualSim(nn.Module):
         # pdb.set_trace()
 
         #################################
-        sim0 = torch.mean(sim_map, dim=-1)
-        sum0 = ((1 + HW) * HW / 2) / sim_map.shape[2]
-        index0 = torch.sort(sim0, dim=-1, descending=True)[1]
-        index1 = torch.sort(index0, dim=-1)[1] + 1
-        index2 = (index1 / sum0).unsqueeze(-1)
+        # sim0 = torch.mean(sim_map, dim=-1)
+        # sum0 = ((1 + HW) * HW / 2) / sim_map.shape[2]
+        # index0 = torch.sort(sim0, dim=-1, descending=True)[1]
+        # index1 = torch.sort(index0, dim=-1)[1] + 1
+        # index2 = (index1 / sum0).unsqueeze(-1)
         #################################
 
         sim_map = sim_map + (1e4 * l_mask - 1e4)  # assign a very small number to padding positions
         sim_map = F.softmax(sim_map, dim=-1)  # (B, num_heads, h*w, N_l)
 
         #################################
-        sim_map = sim_map * index2
+        # sim_map = sim_map * index2
         #################################
 
         return sim_map

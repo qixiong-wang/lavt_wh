@@ -6,6 +6,7 @@ import torch
 import torch.utils.data
 from torch import nn
 import random
+import clip
 
 from functools import reduce
 import operator
@@ -86,7 +87,7 @@ def criterion(input, target):
     return nn.functional.cross_entropy(input, target, weight=weight)
 
 
-def evaluate(model, data_loader, bert_model):
+def evaluate(model, data_loader, textencoder):
     model.eval()
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = 'Test:'
@@ -109,15 +110,14 @@ def evaluate(model, data_loader, bert_model):
                                                    sentences.cuda(non_blocking=True),\
                                                    attentions.cuda(non_blocking=True)
 
-            pdb.set_trace()
-            sentences = sentences.squeeze(1) #(B, N_l)
+            # pdb.set_trace()
+            sentences = sentences.squeeze(1)
             attentions = attentions.squeeze(1)
 
-            if bert_model is not None:
-                last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]
-                embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
+            if textencoder is not None:
+                last_hidden_states = textencoder(sentences, need_add=False)
+                embedding = last_hidden_states.permute(0, 2, 1).float()  # (B, 768, N_l) to make Conv1d happy
                 attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
-                pdb.set_trace()
                 output = model(image, embedding, l_mask=attentions)
             else:
                 output = model(image, sentences, l_mask=attentions)
@@ -148,7 +148,7 @@ def evaluate(model, data_loader, bert_model):
 
 
 def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, print_freq,
-                    iterations, bert_model):
+                    iterations, textencoder):
     model.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value}'))
@@ -167,9 +167,9 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         sentences = sentences.squeeze(1)
         attentions = attentions.squeeze(1)
 
-        if bert_model is not None:
-            last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]  # (6, 10, 768)
-            embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
+        if textencoder is not None:
+            last_hidden_states = textencoder(sentences, need_add=False)  # (B, 20, 768)
+            embedding = last_hidden_states.permute(0, 2, 1).float()  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
             output = model(image, embedding, l_mask=attentions)
             # pdb.set_trace()
@@ -197,7 +197,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         # metric_logger.update(loss120=loss120.item())
 
         del image, target, sentences, attentions, loss, output, data
-        if bert_model is not None:
+        if textencoder is not None:
             del last_hidden_states, embedding
 
         gc.collect()
@@ -242,13 +242,17 @@ def main(args):
     single_model = model.module
 
     if args.model != 'lavt_one':
-        model_class = BertModel
-        bert_model = model_class.from_pretrained(args.ck_bert)
-        bert_model.pooler = None  # a work-around for a bug in Transformers = 3.0.2 that appears for DistributedDataParallel
-        bert_model.cuda()
-        bert_model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(bert_model)
-        bert_model = torch.nn.parallel.DistributedDataParallel(bert_model, device_ids=[args.local_rank])
-        single_bert_model = bert_model.module
+        # model_class = BertModel
+        # bert_model = model_class.from_pretrained(args.ck_bert)
+        # bert_model.pooler = None  # a work-around for a bug in Transformers = 3.0.2 that appears for DistributedDataParallel
+        # bert_model.cuda()
+        # bert_model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(bert_model)
+        # bert_model = torch.nn.parallel.DistributedDataParallel(bert_model, device_ids=[args.local_rank])
+        # single_bert_model = bert_model.module
+        textencoder = clip.load("ViT-L/14", device='cuda', whatonly='encode_text')
+        # textencoder = torch.nn.parallel.DistributedDataParallel(textencoder, device_ids=[args.local_rank])
+        # single_textencoder = textencoder.module
+        single_textencoder = 1
     else:
         bert_model = None
         single_bert_model = None
@@ -258,8 +262,9 @@ def main(args):
         checkpoint = torch.load(cp_path, map_location='cpu')
         single_model.load_state_dict(checkpoint['model'])
         if args.model != 'lavt_one':
-            single_bert_model.load_state_dict(checkpoint['bert_model'])
-
+            print('resume')
+            # single_bert_model.load_state_dict(checkpoint['bert_model'])
+            # single_textencoder.load_state_dict(checkpoint['textencoder'])
     # parameters to optimize
     backbone_no_decay = list()
     backbone_decay = list()
@@ -275,9 +280,9 @@ def main(args):
             {'params': backbone_decay},
             {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
             # the following are the parameters of bert
-            {"params": reduce(operator.concat,
-                              [[p for p in single_bert_model.encoder.layer[i].parameters()
-                                if p.requires_grad] for i in range(10)])},
+            # {"params": reduce(operator.concat,
+            #                   [[p for p in single_bert_model.encoder.layer[i].parameters()
+            #                     if p.requires_grad] for i in range(10)])},
         ]
     else:
         params_to_optimize = [
@@ -285,9 +290,9 @@ def main(args):
             {'params': backbone_decay},
             {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
             # the following are the parameters of bert
-            {"params": reduce(operator.concat,
-                              [[p for p in single_model.text_encoder.encoder.layer[i].parameters()
-                                if p.requires_grad] for i in range(10)])},
+            # {"params": reduce(operator.concat,
+            #                   [[p for p in single_model.text_encoder.encoder.layer[i].parameters()
+            #                     if p.requires_grad] for i in range(10)])},
         ]
 
     # pdb.set_trace()
@@ -315,21 +320,21 @@ def main(args):
     else:
         resume_epoch = -999
 
-    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    # iou, overallIoU = evaluate(model, data_loader_test, textencoder)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
         train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, args.print_freq,
-                        iterations, bert_model)
-        iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+                        iterations, textencoder)
+        iou, overallIoU = evaluate(model, data_loader_test, textencoder)
 
         log_string('Average object IoU {}'.format(iou))
         log_string('Overall IoU {}'.format(overallIoU))
         save_checkpoint = (best_oIoU < overallIoU)
         if save_checkpoint:
             log_string('Better epoch: {}\n'.format(epoch))
-            if single_bert_model is not None:
-                dict_to_save = {'model': single_model.state_dict(), 'bert_model': single_bert_model.state_dict(),
+            if single_textencoder is not None:
+                dict_to_save = {'model': single_model.state_dict(),
                                 'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
                                 'lr_scheduler': lr_scheduler.state_dict()}
             else:
