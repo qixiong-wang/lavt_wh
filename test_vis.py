@@ -56,7 +56,7 @@ def main(args):
         os.mkdir(save_output_mask_dir)
         
     device = torch.device(args.device)
-
+    
 
     single_model = segmentation.__dict__[args.model](pretrained='',args=args)
     checkpoint = torch.load(args.resume, map_location='cpu')
@@ -80,43 +80,47 @@ def main(args):
         filename = 'COCO_train2014_000000380440.jpg'
         # image = mmcv.imread(os.path.join(data_dir,filename))
         image = Image.open(os.path.join(data_dir,filename)).convert("RGB")
+        save_img = np.array(image)
         transform = get_transform(args)
 
         image,img1 = transform(image,image)
-
-        sentence_raw = 'red'
-        max_tokens = 20
-        tokenizer = BertTokenizer.from_pretrained(args.bert_tokenizer)
-        sentences = tokenizer.encode(text=sentence_raw, add_special_tokens=True)
-        attentions = [0] * max_tokens
-        padded_sentences = [0] * max_tokens
-        # truncation of tokens
-        sentences = sentences[:max_tokens]
-
-        padded_sentences[:len(sentences)] = sentences
-        attentions[:len(sentences)] = [1]*len(sentences)
-
         image = torch.cat((image,image),dim=2)
-        
-        padded_sentences = torch.tensor(padded_sentences).unsqueeze(0)
-        attentions = torch.tensor(attentions).unsqueeze(0)
-        image, padded_sentences, attentions = image.to(device),padded_sentences.to(device), attentions.to(device)
-        padded_sentences = padded_sentences.squeeze(1)
-        attentions = attentions.squeeze(1)
+
+        sentences= ['dog','white','right','person','bike']
+        for sentence_raw in sentences:
+            max_tokens = 20
+            tokenizer = BertTokenizer.from_pretrained(args.bert_tokenizer)
+            sentences = tokenizer.encode(text=sentence_raw, add_special_tokens=True)
+            attentions = [0] * max_tokens
+            padded_sentences = [0] * max_tokens
+            # truncation of tokens
+            sentences = sentences[:max_tokens]
+
+            padded_sentences[:len(sentences)] = sentences
+            attentions[:len(sentences)] = [1]*len(sentences)
 
 
-        if bert_model is not None:
-            last_hidden_states = bert_model(padded_sentences, attention_mask=attentions)[0]
+            
+            padded_sentences = torch.tensor(padded_sentences).unsqueeze(0)
+            attentions = torch.tensor(attentions).unsqueeze(0)
+            image, padded_sentences, attentions = image.to(device),padded_sentences.to(device), attentions.to(device)
+            padded_sentences = padded_sentences.squeeze(1)
+            attentions = attentions.squeeze(1)
 
-            embedding = last_hidden_states.permute(0, 2, 1)
-            output = model(image.unsqueeze(0), embedding, attentions.unsqueeze(-1))
-        else:
-            output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
 
-        output = output.cpu()
-        output_mask = output.argmax(1).data.numpy()
+            if bert_model is not None:
+                last_hidden_states = bert_model(padded_sentences, attention_mask=attentions)[0]
 
-        cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg','_') +'person.png'),output_mask[0]*255)
+                embedding = last_hidden_states.permute(0, 2, 1)
+                output = model(image.unsqueeze(0), embedding, attentions.unsqueeze(-1))
+            else:
+                output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
+
+            output = output.cpu()
+            output_mask = output.argmax(1).data.numpy()
+            import pdb
+            pdb.set_trace()
+            cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg','_') +'{}.png'.format(sentence_raw)),output_mask[0]*255)
 
 if __name__ == "__main__":
     from args import get_parser
