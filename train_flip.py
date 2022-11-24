@@ -46,7 +46,7 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 def get_dataset(image_set, transform, args):
-    from data.dataset_refer_bert import ReferDataset
+    from data.dataset_refer_bert_cattwotext import ReferDataset
     ds = ReferDataset(args,
                       split=image_set,
                       image_transforms=transform,
