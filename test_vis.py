@@ -1,3 +1,4 @@
+
 import datetime
 import os
 import time
@@ -44,16 +45,12 @@ def get_transform(args):
 import pickle
 def main(args):
 
-    save_output_mask_dir = 'vis_output_mask_refcoco+_test'
+
     # save_target_dir = 'vis_target_refcoco+_val_data'
     # ref_file = 'refer/data/refcocog/refs(umd).p'
 
     # ref_data = pickle.load(open(ref_file, 'rb'))
 
-    if not os.path.exists(save_output_mask_dir):
-        import pdb
-        pdb.set_trace()
-        os.mkdir(save_output_mask_dir)
         
     device = torch.device(args.device)
     
@@ -74,19 +71,34 @@ def main(args):
     else:
         bert_model = None
 
+
     model.eval()
     with torch.no_grad():
         data_dir = 'refer/data/images/mscoco/images/train2014/'
-        filename = 'COCO_train2014_000000380440.jpg'
+        filename = 'COCO_train2014_000000001271.jpg'
+        # save_output_mask_dir = 'vis_output_mask_refcoco+_test_concattrain'
+        
+        save_output_mask_dir = 'vis_output_mask_refcoco+_test'
+        if not os.path.exists(save_output_mask_dir):
+            os.mkdir(save_output_mask_dir)
         # image = mmcv.imread(os.path.join(data_dir,filename))
         image = Image.open(os.path.join(data_dir,filename)).convert("RGB")
-        save_img = np.array(image)
+        image_raw = np.array(image)
         transform = get_transform(args)
 
+        mean = [0.485, 0.456, 0.406]
+        std = [0.229, 0.224, 0.225]
+        mean = np.array(mean)
+        mean = np.expand_dims(mean, 1)
+        mean = np.expand_dims(mean, 2)
+        std = np.array(std)
+        std = np.expand_dims(std, 1)
+        std = np.expand_dims(std, 2)
         image,img1 = transform(image,image)
-        image = torch.cat((image,image),dim=2)
+        # image = torch.cat((image,image),dim=2)
 
-        sentences= ['dog','white','right','person','bike']
+        # sentences= ['left person and right person','two persons','right person and left person','right and left person','left and right person']
+        sentences= ['person','PERSONS','PERSON','persons']
         for sentence_raw in sentences:
             max_tokens = 20
             tokenizer = BertTokenizer.from_pretrained(args.bert_tokenizer)
@@ -118,9 +130,23 @@ def main(args):
 
             output = output.cpu()
             output_mask = output.argmax(1).data.numpy()
-            import pdb
-            pdb.set_trace()
-            cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg','_') +'{}.png'.format(sentence_raw)),output_mask[0]*255)
+            output_mask = output_mask.squeeze(0)
+
+            output_mask = output_mask[:, :, np.newaxis]
+            # pdb.set_trace()
+            output_mask = output_mask.repeat([3], axis=2)*255
+            output_mask = np.uint8(output_mask)
+
+
+            img0 = np.array(image.cpu())
+            img0 = (img0 * std + mean) * 255
+            img0 = img0.transpose(1, 2, 0)
+            img0 = np.uint8(img0)
+
+            # pdb.set_trace()
+            f0 = np.concatenate((img0, output_mask), axis=1)
+            f1 = Image.fromarray(f0)
+            f1.save(os.path.join(save_output_mask_dir, filename.replace('.jpg', '_') + sentence_raw + '.jpg'))
 
 if __name__ == "__main__":
     from args import get_parser
