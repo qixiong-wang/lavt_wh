@@ -117,7 +117,7 @@ def evaluate(model, data_loader, bert_model):
                 last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]
                 embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
                 attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
-                lan_new, defea, output = model(image, embedding, l_mask=attentions)
+                loss_contra, output = model(image, embedding, l_mask=attentions)
             else:
                 output = model(image, sentences, l_mask=attentions)
 
@@ -149,7 +149,7 @@ def evaluate(model, data_loader, bert_model):
 def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, print_freq,
                     iterations, bert_model):
     model.train()
-    contras_cri = Nce_contrast_loss(5, 8)
+    # contras_cri = Nce_contrast_loss(5, 8)
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value}'))
     header = 'Epoch: [{}]'.format(epoch)
@@ -172,7 +172,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
             last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]  # (6, 10, 768)
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-            lan_new, defea, output = model(image, embedding, l_mask=attentions)
+            loss_contra, output = model(image, embedding, l_mask=attentions)
         else:
             output = model(image, sentences, l_mask=attentions)
 
@@ -181,10 +181,10 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         # target60 = torch.tensor(adp60(target60), dtype=torch.int64)
         # target120 = torch.tensor(target, dtype=torch.float32)
         # target120 = torch.tensor(adp120(target120), dtype=torch.int64)
-        loss_contra = contras_cri(defea, lan_new)
+        # loss_contra = contras_cri(defea, lan_new)
 
         loss_seg = criterion(output, target)
-        loss = loss_seg + loss_contra * 0
+        loss = loss_seg + loss_contra * 0.01
         # loss = loss_seg
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()

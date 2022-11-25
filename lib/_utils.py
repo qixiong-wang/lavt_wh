@@ -5,6 +5,7 @@ import torch
 from torch import nn
 from torch.nn import functional as F
 from bert.modeling_bert import BertModel
+from .lib_functions import Nce_Contrast_Loss
 
 
 class _LAVTSimpleDecode(nn.Module):
@@ -32,6 +33,7 @@ class _LAVTSimpleDecodeconloss(nn.Module):
         super(_LAVTSimpleDecodeconloss, self).__init__()
         self.backbone = backbone
         self.classifier = classifier
+        self.contrastive = Nce_Contrast_Loss()
 
     def forward(self, x, l_feats, l_mask):
         input_shape = x.shape[-2:]
@@ -39,8 +41,12 @@ class _LAVTSimpleDecodeconloss(nn.Module):
         l_new, (x_c1, x_c2, x_c3, x_c4) = features
         defea, x = self.classifier(x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        if defea.shape[0] > 1:
+            loss_contrastive = self.contrastive(defea, l_new)
+        else:
+            loss_contrastive = 0
 
-        return l_new, defea, x
+        return loss_contrastive, x
 
 class LAVTconloss(_LAVTSimpleDecodeconloss):
     pass
