@@ -39,6 +39,20 @@ class Resize(object):
         target = F.resize(target, (self.h, self.w), interpolation=Image.NEAREST)
         return image, target
 
+class Resize_ms(object):
+    def __init__(self, h, w, ratio):
+        self.h = h
+        self.w = w
+        self.ratio = ratio
+
+    def __call__(self, image, target):
+        image0 = F.resize(image, (self.h, self.w))
+        image1 = F.resize(image, (int(self.h * self.ratio), int(self.w * self.ratio)))
+        # If size is a sequence like (h, w), the output size will be matched to this.
+        # If size is an int, the smaller edge of the image will be matched to this number maintaining the aspect ratio
+        target0 = F.resize(target, (self.h, self.w), interpolation=Image.NEAREST)
+        target1 = F.resize(target, (int(self.h * self.ratio), int(self.w * self.ratio)), interpolation=Image.NEAREST)
+        return image0, image1, target0, target1
 
 class RandomResize(object):
     def __init__(self, min_size, max_size=None):
@@ -78,6 +92,20 @@ class RandomHorizontalFlip1(object):
             flag = True
         return image, target, flag
 
+class RandomHorizontalFlip1_ms(object):
+    def __init__(self, flip_prob):
+        self.flip_prob = flip_prob
+
+    def __call__(self, image0, image1, target0, target1):
+        flag = False
+        if random.random() < self.flip_prob:
+            image0 = F.hflip(image0)
+            image1 = F.hflip(image1)
+            target0 = F.hflip(target0)
+            target1 = F.hflip(target1)
+            flag = True
+        return image0, image1, target0, target1, flag
+
 
 class RandomCrop(object):
     def __init__(self, size):
@@ -110,6 +138,15 @@ class ToTensor(object):
         return image, target
 
 
+class ToTensor_ms(object):
+    def __call__(self, image0, image1, target0, target1):
+        image0 = F.to_tensor(image0)
+        image1 = F.to_tensor(image1)
+        target0 = torch.as_tensor(np.asarray(target0).copy(), dtype=torch.int64)
+        target1 = torch.as_tensor(np.asarray(target1).copy(), dtype=torch.int64)
+        return image0, image1, target0, target1
+
+
 class RandomAffine(object):
     def __init__(self, angle, translate, scale, shear, resample=0, fillcolor=None):
         self.angle = angle
@@ -135,3 +172,12 @@ class Normalize(object):
         image = F.normalize(image, mean=self.mean, std=self.std)
         return image, target
 
+class Normalize_ms(object):
+    def __init__(self, mean, std):
+        self.mean = mean
+        self.std = std
+
+    def __call__(self, image0, image1, target0, target1):
+        image0 = F.normalize(image0, mean=self.mean, std=self.std)
+        image1 = F.normalize(image1, mean=self.mean, std=self.std)
+        return image0, image1, target0, target1
