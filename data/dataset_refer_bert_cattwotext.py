@@ -100,6 +100,7 @@ class ReferDataset(data.Dataset):
                             sentence_concat = (self.refer.Refs[ref_ids[0]]['sentences'][num // 2]['raw'] + ' and ' +
                                                self.refer.Refs[ref_ids[1]]['sentences'][num % 2]['raw'])
                             input_ids = self.tokenizer.encode(text=sentence_concat, add_special_tokens=True)
+                            # print([sentence_concat], input_ids)
 
                             # truncation of tokens
                             input_ids = input_ids[:self.max_tokens]
@@ -166,14 +167,18 @@ class ReferDataset(data.Dataset):
             choice_sent = np.random.choice(len(self.input_ids[index]))
             tensor_embeddings = self.input_ids[index][choice_sent]
             attention_mask = self.attention_masks[index][choice_sent]
-            if hflip and ((2157 in tensor_embeddings) or 2187 in tensor_embeddings):
-                if 2157 in tensor_embeddings:
-                    # print(11111111111111)
-                    tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
-                elif 2187 in tensor_embeddings:
-                    tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
-                    # print(bb, tensor_embeddings)
-            # print(tensor_embeddings.shape)
+            if hflip and ((2157 in tensor_embeddings) or (2187 in tensor_embeddings)):
+                # if 2157 in tensor_embeddings:
+                #     # print(11111111111111)
+                #     tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
+                # elif 2187 in tensor_embeddings:
+                #     tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
+                #     # print(bb, tensor_embeddings)
+                #     print(tensor_embeddings.shape)
+                tensor_embeddings = (2187 * (tensor_embeddings == 2157) + 2157 * (tensor_embeddings == 2187)) + \
+                                    (tensor_embeddings * (tensor_embeddings != 2157) * (tensor_embeddings != 2187))
+                # print(bb, tensor_embeddings)
+            # print(bb, tensor_embeddings)
 
 
         return img, target, tensor_embeddings, attention_mask
