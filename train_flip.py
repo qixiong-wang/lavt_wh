@@ -323,7 +323,7 @@ def main(args):
     else:
         resume_epoch = -999
 
-    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
