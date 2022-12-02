@@ -902,21 +902,44 @@ class RefineVisualSim(nn.Module):
         sim_map = torch.matmul(query, key)  # (B, self.num_heads, H*W, N_l)
         sim_map = (self.key_channels ** -.5) * sim_map  # scaled dot product
         # pdb.set_trace()
-
-        #################################
-        sim0 = torch.mean(sim_map, dim=-1)
-        sum0 = ((1 + HW) * HW / 2) / sim_map.shape[2]
-        index0 = torch.sort(sim0, dim=-1, descending=True)[1]
-        index1 = torch.sort(index0, dim=-1)[1] + 1
-        index2 = (index1 / sum0).unsqueeze(-1)
-        #################################
+        #
+        # #################################
+        # sim0 = torch.mean(sim_map, dim=-1)
+        # sum0 = ((1 + HW) * HW / 2) / sim_map.shape[2]
+        # index0 = torch.sort(sim0, dim=-1, descending=True)[1]
+        # index1 = torch.sort(index0, dim=-1)[1] + 1
+        # index2 = (index1 / sum0).unsqueeze(-1)
+        # #################################
+        #
+        # sim_map = sim_map + (1e4 * l_mask - 1e4)  # assign a very small number to padding positions
+        # sim_map = F.softmax(sim_map, dim=-1)  # (B, num_heads, h*w, N_l)
+        #
+        # #################################
+        # sim_map = sim_map * index2
+        # #################################
+        #
 
         sim_map = sim_map + (1e4 * l_mask - 1e4)  # assign a very small number to padding positions
-        sim_map = F.softmax(sim_map, dim=-1)  # (B, num_heads, h*w, N_l)
 
-        #################################
-        sim_map = sim_map * index2
-        #################################
+        # pdb.set_trace()
+
+        length = torch.sum(l_mask, dim=-1).squeeze(-1).squeeze(-1)
+        sum0 = ((1 + HW)*HW/2) / sim_map.shape[2]
+        new_mask = torch.ones((sim_map.shape[0], sim_map.shape[1], sim_map.shape[2], 1)).cuda()
+
+        for i in range(sim_map.shape[0]):
+            sim0 = sim_map[i]
+            len0 = length[i]
+            sim1 = sim0[:, :, :len0]
+            sim2 = sim1.squeeze(0).contiguous()
+            sim2 = torch.mean(sim2, dim=-1)
+            index0 = torch.sort(sim2, dim=0, descending=True)[1]
+            index1 = torch.sort(index0, dim=0)[1] + 1
+            index2 = (index1 / sum0).unsqueeze(0).unsqueeze(-1)
+            new_mask[i, :, :, :] = index2
+
+        sim_map = F.softmax(sim_map, dim=-1)  # (B, num_heads, h*w, N_l)
+        sim_map = sim_map * new_mask
 
         return sim_map
 

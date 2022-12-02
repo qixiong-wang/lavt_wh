@@ -46,7 +46,7 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 def get_dataset(image_set, transform, args):
-    from data.dataset_refer_bert_cattwotext import ReferDataset
+    from data.dataset_refer_bert_cattwotext0 import ReferDataset
     ds = ReferDataset(args,
                       split=image_set,
                       image_transforms=transform,
@@ -205,7 +205,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
 
 def main(args):
     dataset, num_classes = get_dataset("train",
-                                       new_transform(args=args),
+                                       get_transform(args=args),
                                        args=args)
     dataset_test, _ = get_dataset("val",
                                   get_transform(args=args),
