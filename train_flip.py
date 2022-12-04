@@ -316,7 +316,7 @@ def main(args):
     best_oIoU = -0.1
 
     # resume training (optimizer, lr scheduler, and the epoch)
-    if resume_flag:
+    if resume_flag and continue_flag:
         optimizer.load_state_dict(checkpoint['optimizer'])
         lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
         resume_epoch = checkpoint['epoch']
@@ -340,10 +340,14 @@ def main(args):
                 dict_to_save = {'model': single_model.state_dict(), 'bert_model': single_bert_model.state_dict(),
                                 'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
                                 'lr_scheduler': lr_scheduler.state_dict()}
+                make_flag = np.ones((1,1))
+                np.save(os.path.join(args.output_dir, 'continue_flag.npy'), make_flag)
             else:
                 dict_to_save = {'model': single_model.state_dict(),
                                 'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
                                 'lr_scheduler': lr_scheduler.state_dict()}
+                make_flag = np.ones((1,1))
+                np.save(os.path.join(args.output_dir, 'continue_flag.npy'), make_flag)
 
             utils.save_on_master(dict_to_save, os.path.join(args.output_dir,
                                                             'model_best_{}.pth'.format(args.model_id)))
@@ -365,6 +369,8 @@ if __name__ == "__main__":
     log_dir = os.path.join(args.rootpath, args.model_id)
     LOG_FOUT = open(os.path.join(log_dir, 'log_train.txt'), 'a')
     resume_flag = os.path.exists(os.path.join(log_dir, 'model_best_') + args.model_id + '.pth')
+    continue_flag = os.path.exists(os.path.join(log_dir, 'continue_flag.npy'))
+    # pdb.set_trace()
     if resume_flag:
         cp_path = os.path.join(log_dir, 'model_best_') + args.model_id + '.pth'
     # pdb.set_trace()
