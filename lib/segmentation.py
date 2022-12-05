@@ -4,7 +4,7 @@ import torch.nn as nn
 from .mask_predictor import SimpleDecoding
 from .backbone_mn import MultiModalSwinTransformer
 # from .backbone_ori import MultiModalSwinTransformer
-from ._utils import LAVT, LAVTOne, LAVT_vis
+from ._utils import LAVT, LAVTOne, LAVT_vis, LAVT_mstest
 # from ._utils_ori import LAVT, LAVTOne
 
 __all__ = ['lavt', 'lavt_one']
@@ -61,6 +61,7 @@ def _segm_lavt(pretrained, args):
 
     # model_map = [SimpleDecoding, LAVT_kcdecode]
     model_map = [SimpleDecoding, LAVT]
+    # model_map = [SimpleDecoding, LAVT_mstest]
     # model_map = [SimpleDecoding, LAVT_vis]
     # model_map = [SimpleDecoding, MulLAVT]
 

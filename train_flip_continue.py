@@ -292,14 +292,14 @@ def main(args):
     best_oIoU = -0.1
 
     # resume training (optimizer, lr scheduler, and the epoch)
-    if args.resume:
+    if args.resume and continue_flag:
         optimizer.load_state_dict(checkpoint['optimizer'])
         lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
         resume_epoch = checkpoint['epoch']
     else:
         resume_epoch = -999
 
-    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # pdb.set_trace()
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
@@ -324,6 +324,8 @@ def main(args):
 
             utils.save_on_master(dict_to_save, os.path.join(args.output_dir,
                                                             'model_best_{}.pth'.format(args.model_id)))
+            make_flag = np.ones((1, 1))
+            np.save(os.path.join(args.output_dir, 'continue_flag.npy'), make_flag)
             best_oIoU = overallIoU
 
     # summarize
@@ -336,6 +338,9 @@ if __name__ == "__main__":
     from args import get_parser
     parser = get_parser()
     args = parser.parse_args()
+    continue_flag = os.path.exists(os.path.join(args.output_dir, 'continue_flag.npy'))
+    print(os.path.join(args.output_dir, 'continue_flag.npy'))
+    print(continue_flag)
     # set up distributed learning
     utils.init_distributed_mode(args)
     setup_seed(3407)

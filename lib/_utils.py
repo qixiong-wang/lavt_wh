@@ -29,6 +29,34 @@ class LAVT(_LAVTSimpleDecode):
     pass
 
 
+class _LAVTSimpleDecode_mstest(nn.Module):
+    def __init__(self, backbone, classifier):
+        super(_LAVTSimpleDecode_mstest, self).__init__()
+        self.backbone = backbone
+        self.classifier = classifier
+
+    def forward(self, x, l_feats, l_mask):
+
+        input_shape = x.shape[-2:]
+        features = self.backbone(x, l_feats, l_mask)
+        x_c1, x_c2, x_c3, x_c4 = features
+        x_c11 = F.interpolate(x_c1, scale_factor=1.25, mode='bilinear', align_corners=True)
+        x_c21 = F.interpolate(x_c2, scale_factor=1.25, mode='bilinear', align_corners=True)
+        x_c31 = F.interpolate(x_c3, scale_factor=1.25, mode='bilinear', align_corners=True)
+        x_c41 = F.interpolate(x_c4, scale_factor=1.25, mode='bilinear', align_corners=True)
+        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        x1 = self.classifier(x_c41, x_c31, x_c21, x_c11)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        x1 = F.interpolate(x1, size=input_shape, mode='bilinear', align_corners=True)
+
+        x = (x + x1) / 2
+        # pdb.set_trace()
+
+        return x
+
+class LAVT_mstest(_LAVTSimpleDecode_mstest):
+    pass
+
 class _LAVTSimpleDecodevis(nn.Module):
     def __init__(self, backbone, classifier):
         super(_LAVTSimpleDecodevis, self).__init__()

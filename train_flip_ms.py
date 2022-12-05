@@ -140,6 +140,10 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
     header = 'Epoch: [{}]'.format(epoch)
     train_loss = 0
     total_its = 0
+    scales = [1, 1.25]
+
+    ms_images = []
+    outputs = []
 
     for data in metric_logger.log_every(data_loader, print_freq, header):
         total_its += 1
@@ -152,14 +156,25 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         sentences = sentences.squeeze(1)
         attentions = attentions.squeeze(1)
 
+
+
+        for scale in scales:
+            scale_image = F.interpolate(image, scale_factor=scale, mode='bilinear')
+            ms_images.append(scale_image)
+
         if bert_model is not None:
             last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]  # (6, 10, 768)
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-            output = model(image, embedding, l_mask=attentions)
-            # pdb.set_trace()
+
+            for scale_image in ms_images:
+                output = model(scale_image, embedding, l_mask=attentions)
+                outputs.append(F.interpolate(output, size=(image.shape[2], image.shape[3])).unsqueeze(0))
         else:
             output = model(image, sentences, l_mask=attentions)
+
+        # pdb.set_trace()
+        output = torch.mean(torch.cat(outputs, dim=0), dim=0, keepdim=False)
 
         # pdb.set_trace()
         # target60 = torch.tensor(target, dtype=torch.float32)
@@ -221,7 +236,7 @@ def main(args):
                                               args=args)
     model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(model)
     model.cuda()
-    model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank], find_unused_parameters=True)
+    model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank], broadcast_buffers=False, find_unused_parameters=True)
     # model = torch.nn.parallel.DataParallel(model, device_ids=[args.local_rank], find_unused_parameters=True)
     single_model = model.module
 
@@ -231,7 +246,7 @@ def main(args):
         bert_model.pooler = None  # a work-around for a bug in Transformers = 3.0.2 that appears for DistributedDataParallel
         bert_model.cuda()
         bert_model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(bert_model)
-        bert_model = torch.nn.parallel.DistributedDataParallel(bert_model, device_ids=[args.local_rank])
+        bert_model = torch.nn.parallel.DistributedDataParallel(bert_model, device_ids=[args.local_rank], broadcast_buffers=False)
         single_bert_model = bert_model.module
     else:
         bert_model = None
@@ -300,7 +315,6 @@ def main(args):
         resume_epoch = -999
 
     # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
-    # pdb.set_trace()
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
