@@ -40,7 +40,8 @@ class _LAVTSimpleDecodeconloss(nn.Module):
         features = self.backbone(x, l_feats, l_mask)
         l_new, (x_c1, x_c2, x_c3, x_c4) = features
         defea, x = self.classifier(x_c4, x_c3, x_c2, x_c1)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        # x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        x = F.interpolate(x, size=[360, 360], mode='bilinear', align_corners=True)
         if defea.shape[0] > 1:
             loss_contrastive = self.contrastive(defea, l_new)
         else:

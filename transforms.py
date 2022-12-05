@@ -39,6 +39,21 @@ class Resize(object):
         target = F.resize(target, (self.h, self.w), interpolation=Image.NEAREST)
         return image, target
 
+class Resize_diff(object):
+    def __init__(self, img_h, img_w, tar_h, tar_w):
+        self.img_h = img_h
+        self.img_w = img_w
+        self.tar_h = tar_h
+        self.tar_w = tar_w
+
+
+    def __call__(self, image, target):
+        image = F.resize(image, (self.img_h, self.img_w))
+        # If size is a sequence like (h, w), the output size will be matched to this.
+        # If size is an int, the smaller edge of the image will be matched to this number maintaining the aspect ratio
+        target = F.resize(target, (self.tar_h, self.tar_w), interpolation=Image.NEAREST)
+        return image, target
+
 class Resize_ms(object):
     def __init__(self, h, w, ratio):
         self.h = h

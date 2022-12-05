@@ -74,7 +74,8 @@ def IoU(pred, gt):
 
 
 def get_transform(args):
-    transforms = [T.Resize(args.img_size, args.img_size),
+    transforms = [T.Resize_diff(args.img_size, args.img_size, args.tar_size, args.tar_size),
+    #               T.Resize(args.img_size, args.img_size),
                   T.ToTensor(),
                   T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                   ]
@@ -319,7 +320,7 @@ def main(args):
     else:
         resume_epoch = -999
 
-    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
