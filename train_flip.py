@@ -46,7 +46,7 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 def get_dataset(image_set, transform, args):
-    from data.dataset_refer_bert_cattwotext0 import ReferDataset
+    from data.dataset_refer_bert_cattwotext import ReferDataset
     ds = ReferDataset(args,
                       split=image_set,
                       image_transforms=transform,
@@ -205,7 +205,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
 
 def main(args):
     dataset, num_classes = get_dataset("train",
-                                       get_transform(args=args),
+                                       new_transform(args=args),
                                        args=args)
     dataset_test, _ = get_dataset("val",
                                   get_transform(args=args),
@@ -313,7 +313,7 @@ def main(args):
     else:
         resume_epoch = -999
 
-    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
