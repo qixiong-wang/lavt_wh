@@ -16,9 +16,19 @@ class _LAVTSimpleDecode(nn.Module):
         input_shape = x.shape[-2:]
         features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
-        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
 
+        x_c1_ms = F.interpolate(input=x_c1, scale_factor=1.25, mode='bilinear', align_corners=True)
+        x_c2_ms = F.interpolate(input=x_c2, scale_factor=1.25, mode='bilinear', align_corners=True)
+        x_c3_ms = F.interpolate(input=x_c3, scale_factor=1.25, mode='bilinear', align_corners=True)
+        x_c4_ms = F.interpolate(input=x_c4, scale_factor=1.25, mode='bilinear', align_corners=True)
+
+        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+
+        x_ms = self.classifier(x_c4_ms, x_c3_ms, x_c2_ms, x_c1_ms)
+        
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        x_ms = F.interpolate(x_ms, size=input_shape, mode='bilinear', align_corners=True)
+        x = (x+x_ms)/2
         return x
 
 
@@ -46,7 +56,10 @@ class _LAVTOneSimpleDecode(nn.Module):
         ##########################
         features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
+
+
         x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
 
         return x
