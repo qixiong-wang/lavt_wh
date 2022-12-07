@@ -5,7 +5,7 @@ class simple_lan_transformer(nn.Module):
     def __init__(self, hidden_size, lan_size):
         super(simple_lan_transformer, self).__init__()
 
-        self.transformer_model = nn.Transformer(d_model=768, nhead=6, num_encoder_layers=1, num_decoder_layers=3)
+        self.transformer_model = nn.Transformer(d_model=768, nhead=8, num_encoder_layers=1, num_decoder_layers=1)
         self.conv1 = nn.Conv2d(hidden_size, lan_size, 3, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(lan_size)
         self.relu1 = nn.ReLU()
