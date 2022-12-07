@@ -923,23 +923,23 @@ class RefineVisualSim(nn.Module):
 
         # pdb.set_trace()
 
-        length = torch.sum(l_mask, dim=-1).squeeze(-1).squeeze(-1)
-        sum0 = ((1 + HW)*HW/2) / sim_map.shape[2]
-        new_mask = torch.ones((sim_map.shape[0], sim_map.shape[1], sim_map.shape[2], 1)).cuda()
-
-        for i in range(sim_map.shape[0]):
-            sim0 = sim_map[i]
-            len0 = length[i]
-            sim1 = sim0[:, :, :len0]
-            sim2 = sim1.squeeze(0).contiguous()
-            sim2 = torch.mean(sim2, dim=-1)
-            index0 = torch.sort(sim2, dim=0, descending=True)[1]
-            index1 = torch.sort(index0, dim=0)[1] + 1
-            index2 = (index1 / sum0).unsqueeze(0).unsqueeze(-1)
-            new_mask[i, :, :, :] = index2
+        # length = torch.sum(l_mask, dim=-1).squeeze(-1).squeeze(-1)
+        # sum0 = ((1 + HW)*HW/2) / sim_map.shape[2]
+        # new_mask = torch.ones((sim_map.shape[0], sim_map.shape[1], sim_map.shape[2], 1)).cuda()
+        #
+        # for i in range(sim_map.shape[0]):
+        #     sim0 = sim_map[i]
+        #     len0 = length[i]
+        #     sim1 = sim0[:, :, :len0]
+        #     sim2 = sim1.squeeze(0).contiguous()
+        #     sim2 = torch.mean(sim2, dim=-1)
+        #     index0 = torch.sort(sim2, dim=0, descending=True)[1]
+        #     index1 = torch.sort(index0, dim=0)[1] + 1
+        #     index2 = (index1 / sum0).unsqueeze(0).unsqueeze(-1)
+        #     new_mask[i, :, :, :] = index2
 
         sim_map = F.softmax(sim_map, dim=-1)  # (B, num_heads, h*w, N_l)
-        sim_map = sim_map * new_mask
+        # sim_map = sim_map * new_mask
 
         return sim_map
 
