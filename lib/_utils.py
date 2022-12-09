@@ -34,34 +34,36 @@ class _LAVTSimpleDecode(nn.Module):
         if gt==None:
             gt = F.softmax(primary_result, dim=1)
             gt = torch.argmax(gt,dim=1)
+        try:
+            target_images = []
+            target_positions = []
+            for i in range(gt.shape[0]):
+                target_position= torch.where(gt[i]==1)
+                y1, y2 = torch.min(target_position[0]),torch.max(target_position[0])
+                x1, x2 = torch.min(target_position[1]),torch.max(target_position[1])
+                extend_h = max(10,int((y2-y1)/10))
+                extend_w = max(10,int((x2-x1)/10))
+                extend_x1 = max(0,x1-extend_w)
+                extend_x2 = min(w,x2+extend_w)
+                extend_y1 = max(0,y1-extend_h)
+                extend_y2 = min(h,y2+extend_h)
+                target_positions.append([extend_x1,extend_x2,extend_y1,extend_y2])
 
-        target_images = []
-        target_positions = []
-        for i in range(gt.shape[0]):
-            target_position= torch.where(gt[i]==1)
+                target_img = x[i][:,extend_y1:extend_y2,extend_x1:extend_x2]
+                target_img = F.interpolate(target_img.unsqueeze(0), size=input_shape, mode='bilinear', align_corners=True)
+                target_images.append(target_img)
+            target_images = torch.cat(target_images,dim=0)
+            target_features = self.refinement(target_images)
+            refine_result = primary_result.clone().detach()
+            
+            for i in range(gt.shape[0]):
+                extend_x1,extend_x2,extend_y1,extend_y2 = target_positions[i]
+                refine_result[i][:,extend_y1:extend_y2,extend_x1:extend_x2] = F.interpolate(target_features[i].unsqueeze(0),size=(extend_y2-extend_y1,extend_x2-extend_x1), mode='bilinear', align_corners=True).squeeze()
 
-            y1, y2 = torch.min(target_position[0]),torch.max(target_position[0])
-            x1, x2 = torch.min(target_position[1]),torch.max(target_position[1])
-            extend_h = max(10,int((y2-y1)/10))
-            extend_w = max(10,int((x2-x1)/10))
-            extend_x1 = max(0,x1-extend_w)
-            extend_x2 = min(w,x2+extend_w)
-            extend_y1 = max(0,y1-extend_h)
-            extend_y2 = min(h,y2+extend_h)
-            target_positions.append([extend_x1,extend_x2,extend_y1,extend_y2])
-
-            target_img = x[i][:,extend_y1:extend_y2,extend_x1:extend_x2]
-            target_img = F.interpolate(target_img.unsqueeze(0), size=input_shape, mode='bilinear', align_corners=True)
-            target_images.append(target_img)
-
-        target_images = torch.cat(target_images,dim=0)
-        target_features = self.refinement(target_images)
+        except:
+            refine_result = primary_result.clone().detach()
         # refine_result = torch.zeros_like(primary_result)
 
-        refine_result = primary_result.clone().detach()
-        for i in range(gt.shape[0]):
-            extend_x1,extend_x2,extend_y1,extend_y2 = target_positions[i]
-            refine_result[i][:,extend_y1:extend_y2,extend_x1:extend_x2] = F.interpolate(target_features[i].unsqueeze(0),size=(extend_y2-extend_y1,extend_x2-extend_x1), mode='bilinear', align_corners=True).squeeze()
 
         return primary_result, refine_result
 
