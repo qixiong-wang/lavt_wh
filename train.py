@@ -238,9 +238,9 @@ def main(args):
             {'params': backbone_decay},
             {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
             # the following are the parameters of bert
-            # {"params": reduce(operator.concat,
-            #                   [[p for p in single_bert_model.encoder.layer[i].parameters()
-            #                     if p.requires_grad] for i in range(10)])},
+            {"params": reduce(operator.concat,
+                              [[p for p in single_bert_model.encoder.layer[i].parameters()
+                                if p.requires_grad] for i in range(10)])},
         ]
     else:
         params_to_optimize = [
