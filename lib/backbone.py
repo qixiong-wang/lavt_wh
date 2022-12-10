@@ -860,7 +860,7 @@ class ResNet(nn.Module):
     def __init__(self, block, layers, num_classes=1000, dilated=True, norm_layer=nn.BatchNorm2d, multi_grid=False, multi_dilation=None):
         self.inplanes = 64
         super(ResNet, self).__init__()
-        self.conv1 = nn.Conv2d(3, 64, kernel_size=7, stride=2, padding=3,
+        self.conv1 = nn.Conv2d(5, 64, kernel_size=7, stride=2, padding=3,
                                bias=False)
         self.bn1 = norm_layer(64)
         self.relu = nn.ReLU(inplace=True)
@@ -987,7 +987,9 @@ def resnet50(pretrained=False, root='./pretrain_models', **kwargs):
     model = ResNet(Bottleneck, [3, 4, 6, 3], **kwargs)
     if pretrained:
         # from ..models.model_store import get_model_file
-        model.load_state_dict(torch.load('/home/wangqx/.cache/torch/hub/checkpoints/resnet50-19c8e357.pth'), strict=False)
+        pretrain_dict = torch.load('/home/wangqx/.cache/torch/hub/checkpoints/resnet50-19c8e357.pth')
+        pretrain_dict.pop('conv1.weight')
+        model.load_state_dict(pretrain_dict, strict=False)
     return model
 
 
