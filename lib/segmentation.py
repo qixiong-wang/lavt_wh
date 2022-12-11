@@ -55,14 +55,15 @@ def _segm_lavt(pretrained, args):
     else:
         print('Randomly initialize Multi-modal Swin Transformer weights.')
         backbone.init_weights()
-    refine_branch = refinement_net(n_classes=2, backbone='resnet50')
+        
     model_map = [SimpleDecoding, LAVT,SimpleDecoding]
 
     classifier1 = model_map[0](8*embed_dim)
     base_model = model_map[1]
-    classifier2 = model_map[0](8*embed_dim)
+    classifier2 = model_map[2](8*embed_dim)
 
     model = base_model(backbone, classifier1, classifier2)
+
     return model
 
 
