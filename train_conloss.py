@@ -5,7 +5,7 @@ import time
 import torch
 import torch.utils.data
 from torch import nn
-import random
+import random, math
 
 from functools import reduce
 import operator
@@ -275,24 +275,24 @@ def main(args):
             backbone_decay.append(m)
 
     if args.model != 'lavt_one':
-        # params_to_optimize = [
-        #     {'params': backbone_no_decay, 'weight_decay': 0.0},
-        #     {'params': backbone_decay},
-        #     {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
-        #     # the following are the parameters of bert
-        #     {"params": reduce(operator.concat,
-        #                       [[p for p in single_bert_model.encoder.layer[i].parameters()
-        #                         if p.requires_grad] for i in range(10)])},
-        # ]
         params_to_optimize = [
             {'params': backbone_no_decay, 'weight_decay': 0.0},
             {'params': backbone_decay},
-            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad], 'lr':args.lr*10},
+            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
             # the following are the parameters of bert
             {"params": reduce(operator.concat,
                               [[p for p in single_bert_model.encoder.layer[i].parameters()
                                 if p.requires_grad] for i in range(10)])},
         ]
+        # params_to_optimize = [
+        #     {'params': backbone_no_decay, 'weight_decay': 0.0},
+        #     {'params': backbone_decay},
+        #     {"params": [p for p in single_model.classifier.parameters() if p.requires_grad], 'lr':args.lr*10},
+        #     # the following are the parameters of bert
+        #     {"params": reduce(operator.concat,
+        #                       [[p for p in single_bert_model.encoder.layer[i].parameters()
+        #                         if p.requires_grad] for i in range(10)])},
+        # ]
 
     else:
         params_to_optimize = [
@@ -314,8 +314,14 @@ def main(args):
                                   )
 
     # learning rate scheduler
-    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
-                                                     lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
+    warm_up_iter = 800
+    lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
+            (1 - x / (len(data_loader) * args.epochs)) ** 0.9
+
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
+
+    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
+    #                                                  lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
 
     # housekeeping
     start_time = time.time()
@@ -330,7 +336,7 @@ def main(args):
     else:
         resume_epoch = -999
 
-    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
