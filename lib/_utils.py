@@ -12,7 +12,7 @@ class _LAVTSimpleDecode(nn.Module):
         self.backbone = backbone
         self.classifier = classifier
         self.refinement = refinement
-        self.primary_result_bn = nn.BatchNorm2d(2)
+        # self.primary_result_bn = nn.BatchNorm2d(2)
 
     def forward(self, x, l_feats, l_mask, gt=None):
         input_shape = x.shape[-2:]
@@ -31,8 +31,8 @@ class _LAVTSimpleDecode(nn.Module):
         # x_ms = self.classifier(x_c4_ms, x_c3_ms, x_c2_ms, x_c1_ms)
         
         primary_result = F.interpolate(primary_result, size=input_shape, mode='bilinear', align_corners=True)
-        # primary_result_p = F.softmax(primary_result, dim=1)
-        primary_result_p = self.primary_result_bn(primary_result)
+        primary_result_p = F.softmax(primary_result, dim=1)
+        # primary_result_p = self.primary_result_bn(primary_result)
 
         refine_result = self.refinement(torch.cat((x,primary_result_p),dim=1))
 
