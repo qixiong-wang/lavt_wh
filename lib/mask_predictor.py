@@ -9,6 +9,7 @@ from .backbone import resnet50,resnet101
 class SimpleDecoding(nn.Module):
     def __init__(self, c4_dims, factor=2):
         super(SimpleDecoding, self).__init__()
+
         hidden_size = c4_dims//factor
         c4_size = c4_dims
         c3_size = c4_dims//(factor**1)
