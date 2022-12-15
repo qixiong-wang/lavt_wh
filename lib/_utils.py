@@ -31,7 +31,7 @@ class _LAVTSimpleDecode(nn.Module):
         # x_ms = self.classifier(x_c4_ms, x_c3_ms, x_c2_ms, x_c1_ms)
         
         primary_result = F.interpolate(primary_result, size=input_shape, mode='bilinear', align_corners=True)
-        primary_result_p = F.softmax(primary_result, dim=1)
+        primary_result_p = F.softmax(primary_result, dim=1).detach()
         # primary_result_p = self.primary_result_bn(primary_result)
 
         refine_result = self.refinement(torch.cat((x,primary_result_p),dim=1))
