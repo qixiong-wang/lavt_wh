@@ -476,8 +476,6 @@ class MultiModalSwinTransformer(nn.Module):
         for i in range(self.num_layers):
             layer = self.layers[i]
             x_out, H, W, x, Wh, Ww = layer(x, Wh, Ww, l, l_mask)
-            import pdb
-            pdb.set_trace()
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)  # output of a Block has shape (B, H*W, dim)
