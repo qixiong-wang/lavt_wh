@@ -128,13 +128,15 @@ class ReferDataset(data.Dataset):
             choice_sent = np.random.choice(len(self.input_ids[index]))
             tensor_embeddings = self.input_ids[index][choice_sent]
             attention_mask = self.attention_masks[index][choice_sent]
-            if hflip and ((2157 in tensor_embeddings) or 2187 in tensor_embeddings):
-                if 2157 in tensor_embeddings:
-                    # print(11111111111111)
-                    tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
-                elif 2187 in tensor_embeddings:
-                    tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
-                    # print(bb, tensor_embeddings)
+            if hflip and ((2157 in tensor_embeddings) or (2187 in tensor_embeddings)):
+                # if 2157 in tensor_embeddings:
+                #     # print(11111111111111)
+                #     tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
+                # elif 2187 in tensor_embeddings:
+                #     tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
+                #     # print(bb, tensor_embeddings)
+                tensor_embeddings = (2187 * (tensor_embeddings == 2157) + 2157 * (tensor_embeddings == 2187)) + \
+                    (tensor_embeddings * (tensor_embeddings != 2157) * (tensor_embeddings != 2187))
             # print(tensor_embeddings.shape)
 
         return img, target, tensor_embeddings, attention_mask
