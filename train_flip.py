@@ -46,7 +46,7 @@ def setup_seed(seed):
     torch.backends.cudnn.deterministic = True
 
 def get_dataset(image_set, transform, args):
-    from data.dataset_refer_bert_cattwotext import ReferDataset
+    from data.dataset_refer_bert import ReferDataset
     ds = ReferDataset(args,
                       split=image_set,
                       image_transforms=transform,
@@ -116,7 +116,7 @@ def evaluate(model, data_loader, bert_model):
                 last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]
                 embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
                 attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
-                output = model(image, embedding, l_mask=attentions)
+                output, output2 = model(image, embedding, l_mask=attentions)
             else:
                 output = model(image, sentences, l_mask=attentions)
 
@@ -169,18 +169,17 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
             last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]  # (6, 10, 768)
             embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
             attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-            output = model(image, embedding, l_mask=attentions)
-            # pdb.set_trace()
+            # output1 = model(image, embedding, l_mask=attentions, gt=target)
+            output1, output2 = model(image, embedding, l_mask=attentions, gt=target)
+
         else:
             output = model(image, sentences, l_mask=attentions)
 
-        # pdb.set_trace()
-        # target60 = torch.tensor(target, dtype=torch.float32)
-        # target60 = torch.tensor(adp60(target60), dtype=torch.int64)
-        # target120 = torch.tensor(target, dtype=torch.float32)
-        # target120 = torch.tensor(adp120(target120), dtype=torch.int64)
+        loss1 = criterion(output1, target)
 
-        loss = criterion(output, target)
+        loss2 = criterion(output2, target)
+
+        loss = loss1 + loss2
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()
         optimizer.step()
@@ -189,12 +188,12 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         torch.cuda.synchronize()
         train_loss += loss.item()
         iterations += 1
-        metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
-        # metric_logger.update(loss0=loss.item())
-        # metric_logger.update(loss60=loss60.item())
-        # metric_logger.update(loss120=loss120.item())
+        # metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
+        metric_logger.update(loss=loss.item(), loss1=loss1.item(),loss2=loss2.item(),lr=optimizer.param_groups[0]["lr"])
 
-        del image, target, sentences, attentions, loss, output, data
+        # del image, target, sentences, attentions, loss, output1, output2, data
+        del image, target, sentences, attentions, loss, output1, data
+
         if bert_model is not None:
             del last_hidden_states, embedding
 
@@ -272,6 +271,7 @@ def main(args):
             {'params': backbone_no_decay, 'weight_decay': 0.0},
             {'params': backbone_decay},
             {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
+            {"params": [p for p in single_model.refinement.parameters() if p.requires_grad]},
             # the following are the parameters of bert
             {"params": reduce(operator.concat,
                               [[p for p in single_bert_model.encoder.layer[i].parameters()
@@ -282,6 +282,7 @@ def main(args):
             {'params': backbone_no_decay, 'weight_decay': 0.0},
             {'params': backbone_decay},
             {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
+            {"params": [p for p in single_model.refinement.parameters() if p.requires_grad]},
             # the following are the parameters of bert
             {"params": reduce(operator.concat,
                               [[p for p in single_model.text_encoder.encoder.layer[i].parameters()
@@ -313,7 +314,7 @@ def main(args):
     else:
         resume_epoch = -999
 
-    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)

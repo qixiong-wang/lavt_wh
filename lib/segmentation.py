@@ -1,8 +1,8 @@
 import torch
 import torch.nn as nn
-from .mask_predictor import SimpleDecoding
+from .mask_predictor import SimpleDecoding, refinement_net
 from .backbone_mn import MultiModalSwinTransformer
-from ._utils import LAVT, LAVTOne, LAVTconloss
+from ._utils import LAVT, LAVTOne
 
 __all__ = ['lavt', 'lavt_one']
 
@@ -56,14 +56,14 @@ def _segm_lavt(pretrained, args):
         print('Randomly initialize Multi-modal Swin Transformer weights.')
         backbone.init_weights()
 
-    model_map = [SimpleDecoding, LAVT]
-    # model_map = [SimpleDecoding, LAVTconloss]
-    # model_map = [SimpleDecoding, LAVT_kcdecode]
+    refine_branch = refinement_net(n_classes=2, backbone='resnet50')
+    model_map = [SimpleDecoding, LAVT,refine_branch]
 
     classifier = model_map[0](8*embed_dim)
     base_model = model_map[1]
+    refine_branch = model_map[2]
 
-    model = base_model(backbone, classifier)
+    model = base_model(backbone, classifier, refine_branch)
     return model
 
 
