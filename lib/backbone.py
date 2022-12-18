@@ -461,9 +461,15 @@ class MultiModalSwinTransformer(nn.Module):
 
     def forward(self, x, l, l_mask):
         """Forward function."""
+
+        ms_H = int(x.shape[-2]*1.25)
+        ms_W = int(x.shape[-1]*1.25)
+        x_ms =  F.interpolate(x, size=(ms_H, ms_W), mode='bicubic')
         x = self.patch_embed(x)
+        x_ms = self.patch_embed(x_ms)
 
         Wh, Ww = x.size(2), x.size(3)
+        
         if self.ape:
             # interpolate the position embedding to the corresponding size
             absolute_pos_embed = F.interpolate(self.absolute_pos_embed, size=(Wh, Ww), mode='bicubic')
@@ -475,8 +481,8 @@ class MultiModalSwinTransformer(nn.Module):
         outs = []
         for i in range(self.num_layers):
             layer = self.layers[i]
-            x_out, H, W, x, Wh, Ww = layer(x, Wh, Ww, l, l_mask)
 
+            x_out, H, W, x, Wh, Ww = layer(x, Wh, Ww, l, l_mask)
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
                 x_out = norm_layer(x_out)  # output of a Block has shape (B, H*W, dim)
@@ -484,7 +490,29 @@ class MultiModalSwinTransformer(nn.Module):
                 out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
                 outs.append(out)
 
-        return tuple(outs)
+        #### ms_test
+        Wh, Ww = x_ms.size(2), x_ms.size(3)
+        if self.ape:
+            # interpolate the position embedding to the corresponding size
+            absolute_pos_embed = F.interpolate(self.absolute_pos_embed, size=(Wh, Ww), mode='bicubic')
+            x = (x + absolute_pos_embed).flatten(2).transpose(1, 2)  # B Wh*Ww C
+        else:
+            x_ms = x_ms.flatten(2).transpose(1, 2)
+        x_ms= self.pos_drop(x_ms)
+
+        outs_ms = []
+        for i in range(self.num_layers):
+            layer = self.layers[i]
+
+            x_out, H, W, x_ms, Wh, Ww = layer(x_ms, Wh, Ww, l, l_mask)
+            if i in self.out_indices:
+                norm_layer = getattr(self, f'norm{i}')
+                x_out = norm_layer(x_out)  # output of a Block has shape (B, H*W, dim)
+
+                out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
+                outs_ms.append(out)
+
+        return tuple(outs), tuple(outs_ms)
 
     def train(self, mode=True):
         """Convert the model into training mode while keep layers freezed."""
@@ -568,6 +596,7 @@ class MMBasicLayer(nn.Module):
         # calculate attention mask for SW-MSA
         Hp = int(np.ceil(H / self.window_size)) * self.window_size
         Wp = int(np.ceil(W / self.window_size)) * self.window_size
+
         img_mask = torch.zeros((1, Hp, Wp, 1), device=x.device)  # 1 Hp Wp 1
         h_slices = (slice(0, -self.window_size),
                     slice(-self.window_size, -self.shift_size),
