@@ -462,11 +462,9 @@ class MultiModalSwinTransformer(nn.Module):
     def forward(self, x, l, l_mask):
         """Forward function."""
 
-        ms_H = int(x.shape[-2]*1.25)
-        ms_W = int(x.shape[-1]*1.25)
-        x_ms =  F.interpolate(x, size=(ms_H, ms_W), mode='bicubic')
+        x_ms =  F.interpolate(x, scale_factor=0.75, mode='bilinear')
+
         x = self.patch_embed(x)
-        x_ms = self.patch_embed(x_ms)
 
         Wh, Ww = x.size(2), x.size(3)
         
@@ -491,6 +489,7 @@ class MultiModalSwinTransformer(nn.Module):
                 outs.append(out)
 
         #### ms_test
+        x_ms = self.patch_embed(x_ms)
         Wh, Ww = x_ms.size(2), x_ms.size(3)
         if self.ape:
             # interpolate the position embedding to the corresponding size

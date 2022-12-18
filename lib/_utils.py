@@ -14,6 +14,7 @@ class _LAVTSimpleDecode(nn.Module):
 
     def forward(self, x, l_feats, l_mask):
         input_shape = x.shape[-2:]
+        
         features, features_ms = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
         x_c1_ms, x_c2_ms, x_c3_ms, x_c4_ms = features_ms
@@ -35,7 +36,7 @@ class _LAVTSimpleDecode(nn.Module):
         x_ms = F.interpolate(x_ms, size=input_shape, mode='bilinear', align_corners=True)
         # x = x+x_ms
 
-        return x
+        return x_ms
 
 
 class LAVT(_LAVTSimpleDecode):
