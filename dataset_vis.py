@@ -99,10 +99,12 @@ def main(args):
 
                 output = output.cpu()
                 output_mask = output.argmax(1).data.numpy()
-
+                np. target
+                import pdb
+                pdb.set_trace()
                 cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.png'),output_mask[0]*255)
                 cv2.imwrite(os.path.join(save_target_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.png'),target[0]*255)
-                mmcv.dump(embedding,os.path.join(save_text_embedding_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.pkl'))
+                # mmcv.dump(embedding,os.path.join(save_text_embedding_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.pkl'))
 
 if __name__ == "__main__":
     from args import get_parser
