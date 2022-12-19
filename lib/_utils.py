@@ -13,13 +13,27 @@ class _LAVTSimpleDecode(nn.Module):
         self.classifier = classifier
 
     def forward(self, x, l_feats, l_mask):
-        input_shape = x.shape[-2:]
-        features = self.backbone(x, l_feats, l_mask)
-        x_c1, x_c2, x_c3, x_c4 = features
-        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
 
-        return x
+        # input_shape = x.shape[-2:]
+        x_ms =  F.interpolate(x, scale_factor=1.25, mode='bilinear')
+        input_shape = x_ms.shape[-2:]
+        
+        # features = self.backbone(x, l_feats, l_mask)
+        # x_c1, x_c2, x_c3, x_c4 = features
+        # x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        # x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+
+        features_ms = self.backbone(x_ms, l_feats, l_mask)
+        x_c1, x_c2, x_c3, x_c4 = features_ms
+        x_ms = self.classifier(x_c4, x_c3, x_c2, x_c1)
+
+        # x_ms = F.interpolate(x_ms, size=input_shape, mode='bilinear')
+        x_ms = F.interpolate(x_ms, size=input_shape, mode='bilinear', align_corners=True)
+        # # x_ms = F.interpolate(x_ms, size=(480,480))
+
+        return x_ms
+
+        # return x
 
 
 class LAVT(_LAVTSimpleDecode):

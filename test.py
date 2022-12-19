@@ -41,7 +41,7 @@ def evaluate(model, data_loader, bert_model, device):
     seg_total = 0
     mean_IoU = []
     header = 'Test:'
-
+    count = 0
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader, 100, header):
             image, target, sentences, attentions = data
@@ -54,12 +54,18 @@ def evaluate(model, data_loader, bert_model, device):
                 if bert_model is not None:
                     last_hidden_states = bert_model(sentences[:, :, j], attention_mask=attentions[:, :, j])[0]
                     embedding = last_hidden_states.permute(0, 2, 1)
-                    output = model(image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
+                    output_raw = model(image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
+                    output =  F.interpolate(output_raw,size=(image.shape[2],image.shape[3]))
+
                 else:
                     output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
+                torch.save(output_raw,'model_ms_output_raw/{}.pkl'.format(count))
 
                 output = output.cpu()
+                count +=1
+                torch.save(output,'model_ms_output/{}.pkl'.format(count))
                 output_mask = output.argmax(1).data.numpy()
+                torch.save(output_mask,'model_ms_mask/{}.pkl'.format(count))
                 I, U = computeIoU(output_mask, target)
                 if U == 0:
                     this_iou = 0.0
