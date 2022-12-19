@@ -42,15 +42,15 @@ def get_transform(args):
 
 
 def main(args):
-    save_output_mask_dir = 'vis_output_mask_refcoco+_val_data'
-    save_target_dir = 'vis_target_refcoco+_val_data'
-    save_text_embedding_dir = 'vis_pickel_refcoco+_val_data'
+    save_output_mask_dir = 'vis_ms_output_mask_refcoco+_val_data'
+    # save_target_dir = 'vis_target_refcoco+_val_data'
+    # save_text_embedding_dir = 'vis_pickel_refcoco+_val_data'
     if not os.path.exists(save_output_mask_dir):
         os.mkdir(save_output_mask_dir)
-    if not os.path.exists(save_target_dir):
-        os.mkdir(save_target_dir)
-    if not os.path.exists(save_text_embedding_dir):
-        os.mkdir(save_text_embedding_dir)
+    # if not os.path.exists(save_target_dir):
+    #     os.mkdir(save_target_dir)
+    # if not os.path.exists(save_text_embedding_dir):
+    #     os.mkdir(save_text_embedding_dir)
     device = torch.device(args.device)
     dataset_test, _ = get_dataset(args.split, get_transform(args=args), args)
     test_sampler = torch.utils.data.SequentialSampler(dataset_test)
@@ -75,6 +75,14 @@ def main(args):
     metric_logger = utils.MetricLogger(delimiter="  ")
 
     header = 'Test:'
+    mean = [0.485, 0.456, 0.406]
+    std = [0.229, 0.224, 0.225]
+    mean = np.array(mean)
+    mean = np.expand_dims(mean, 1)
+    mean = np.expand_dims(mean, 2)
+    std = np.array(std)
+    std = np.expand_dims(std, 1)
+    std = np.expand_dims(std, 2)
 
     model.eval()
     with torch.no_grad():
@@ -99,11 +107,20 @@ def main(args):
 
                 output = output.cpu()
                 output_mask = output.argmax(1).data.numpy()
-                np. target
-                import pdb
-                pdb.set_trace()
-                cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.png'),output_mask[0]*255)
-                cv2.imwrite(os.path.join(save_target_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.png'),target[0]*255)
+                mask_save = np.concatenate((target,output_mask),axis=2)
+                mask_save = np.repeat(mask_save,3,axis=0)*255
+                img0 = np.array(image.cpu().squeeze())
+                img0 = (img0 * std + mean) * 255
+                img0 = img0.transpose(1, 2, 0)
+                img0 = np.uint8(img0)[:,:,::-1]
+
+                mask_save = mask_save.astype(np.uint8)
+                mask_save = mask_save.transpose(1,2,0)
+                
+                img_mask_save = np.concatenate((img0,mask_save),axis=1)
+
+                cv2.imwrite(os.path.join(save_output_mask_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.png'),img_mask_save)
+                # cv2.imwrite(os.path.join(save_target_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.png'),target[0]*255)
                 # mmcv.dump(embedding,os.path.join(save_text_embedding_dir, filename.replace('.jpg','_') + ref[0]['sentences'][j]['sent'][0]+'.pkl'))
 
 if __name__ == "__main__":
