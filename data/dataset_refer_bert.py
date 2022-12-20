@@ -168,14 +168,18 @@ class ReferDataset(data.Dataset):
             tensor_embeddings = self.input_ids[index][choice_sent]
             tensor_embeddings1 = self.input_ids1[index][choice_sent]
             attention_mask = self.attention_masks[index][choice_sent]
-            if hflip and ((2157 in tensor_embeddings) or 2187 in tensor_embeddings):
-                if 2157 in tensor_embeddings:
+            if hflip and ((2157 in tensor_embeddings) or (2187 in tensor_embeddings)):
+                # if 2157 in tensor_embeddings:
                     # print(11111111111111)
-                    tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
-                    tensor_embeddings1 = 2187 * (tensor_embeddings1 == 2157) + tensor_embeddings1 * (tensor_embeddings1 != 2157)
-                elif 2187 in tensor_embeddings:
-                    tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
-                    tensor_embeddings1 = 2157 * (tensor_embeddings1 == 2187) + tensor_embeddings1 * (tensor_embeddings1 != 2187)
+                #     tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
+                #     tensor_embeddings1 = 2187 * (tensor_embeddings1 == 2157) + tensor_embeddings1 * (tensor_embeddings1 != 2157)
+                # elif 2187 in tensor_embeddings:
+                #     tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
+                #     tensor_embeddings1 = 2157 * (tensor_embeddings1 == 2187) + tensor_embeddings1 * (tensor_embeddings1 != 2187)
+                tensor_embeddings = (2187 * (tensor_embeddings == 2157) + 2157 * (tensor_embeddings == 2187)) + \
+                    (tensor_embeddings * (tensor_embeddings != 2157) * (tensor_embeddings != 2187))
+                tensor_embeddings1 = (2187 * (tensor_embeddings1 == 2157) + 2157 * (tensor_embeddings1 == 2187)) + \
+                    (tensor_embeddings1 * (tensor_embeddings1 != 2157) * (tensor_embeddings1 != 2187))
                     # print(bb, tensor_embeddings)
             # print(tensor_embeddings.shape)
 

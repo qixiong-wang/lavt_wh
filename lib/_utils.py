@@ -6,6 +6,7 @@ from torch import nn
 from torch.nn import functional as F
 from bert.modeling_bert import BertModel
 from some_functions import lan_cossim_fun
+from .lib_functions import Nce_Contrast_Loss
 
 class _LAVTSimpleDecode(nn.Module):
     def __init__(self, backbone, classifier):
@@ -13,18 +14,23 @@ class _LAVTSimpleDecode(nn.Module):
         self.backbone = backbone
         self.classifier = classifier
         self.cossim = lan_cossim_fun()
+        self.contrastive = Nce_Contrast_Loss()
 
     def forward(self, x, l_feats, l_feats1, l_mask):
 
         input_shape = x.shape[-2:]
-        l0, features = self.backbone(x, l_feats, l_mask)
+        l_new, features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
-        l1, x = self.classifier(l_feats1, x_c4, x_c3, x_c2, x_c1)
+        defea, l1, x = self.classifier(l_feats1, x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-        loss_sim = self.cossim(l0, l1, l_mask)
-        # pdb.set_trace()
+        if defea.shape[0] > 1:
+            loss_contrastive = self.contrastive(defea, l_new)
+            loss_sim = self.cossim(l_new, l1, l_mask)
+        else:
+            loss_contrastive = 0
+            loss_sim = 0
 
-        return loss_sim, x
+        return loss_contrastive, loss_sim, x
 
 class LAVT(_LAVTSimpleDecode):
     pass
