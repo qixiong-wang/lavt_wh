@@ -316,14 +316,14 @@ def main(args):
                                   )
 
     # learning rate scheduler
-    # warm_up_iter = 800
-    # lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
-    #         (1 - x / (len(data_loader) * args.epochs)) ** 0.9
-    #
-    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
+    warm_up_iter = 800
+    lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
+            (1 - x / (len(data_loader) * args.epochs)) ** 0.9
 
-    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
-                                                     lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
+
+    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
+    #                                                  lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
 
     # housekeeping
     start_time = time.time()
