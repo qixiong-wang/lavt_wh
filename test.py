@@ -52,6 +52,7 @@ def evaluate(model, data_loader, bert_model, device):
             target = target.cpu().data.numpy()
             for j in range(sentences.size(-1)):
                 if bert_model is not None:
+                    
                     last_hidden_states = bert_model(sentences[:, :, j], attention_mask=attentions[:, :, j])[0]
                     embedding = last_hidden_states.permute(0, 2, 1)
                     output_raw = model(image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
@@ -65,7 +66,6 @@ def evaluate(model, data_loader, bert_model, device):
                 count +=1
                 torch.save(output,'model_ms_output/{}.pkl'.format(count))
                 output_mask = output.argmax(1).data.numpy()
-                torch.save(output_mask,'model_ms_mask/{}.pkl'.format(count))
                 I, U = computeIoU(output_mask, target)
                 if U == 0:
                     this_iou = 0.0

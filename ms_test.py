@@ -42,7 +42,7 @@ def evaluate(model, data_loader, bert_model, device):
     mean_IoU = []
     header = 'Test:'
     # scales = [0.75,1,1.25]
-    scales = [1.25]
+    scales = [1]
     count = 0
     with torch.no_grad():
         for data in metric_logger.log_every(data_loader, 100, header):
@@ -54,19 +54,19 @@ def evaluate(model, data_loader, bert_model, device):
             target = target.cpu().data.numpy()
             
             ms_images = []
-            outputs = []
+
             for scale in scales:
                 scale_image = F.interpolate(image,scale_factor=scale,mode='bilinear')
                 ms_images.append(scale_image)
 
             for j in range(sentences.size(-1)):
+                outputs = []
                 if bert_model is not None:
                     last_hidden_states = bert_model(sentences[:, :, j], attention_mask=attentions[:, :, j])[0]
                     embedding = last_hidden_states.permute(0, 2, 1)
                     for scale_image in ms_images:
                         output_raw = model(scale_image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
                         outputs.append(F.interpolate(output_raw,size=(image.shape[2],image.shape[3])))
-
                 else:
                     output = model(image, sentences[:, :, j], l_mask=attentions[:, :, j])
                 torch.save(output_raw,'input_ms_output_raw/{}.pkl'.format(count))
@@ -75,7 +75,6 @@ def evaluate(model, data_loader, bert_model, device):
                 count +=1
                 torch.save(output,'input_ms_output/{}.pkl'.format(count))
                 output_mask = output.argmax(1).data.numpy()
-                torch.save(output_mask,'input_ms_mask/{}.pkl'.format(count))
                 I, U = computeIoU(output_mask, target)
                 if U == 0:
                     this_iou = 0.0
