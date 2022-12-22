@@ -1,7 +1,7 @@
 import torch
 import torch.nn as nn
 from .mask_predictor_conloss import SimpleDecoding
-from .backbonev2_conloss import MultiModalSwinTransformer
+from .backbone_conloss import MultiModalSwinTransformer
 from ._utils import LAVT, LAVTOne, LAVTconloss
 
 __all__ = ['lavt', 'lavt_one']
@@ -47,7 +47,7 @@ def _segm_lavt(pretrained, args):
                                          ape=False, drop_path_rate=0.3, patch_norm=True,
                                          out_indices=out_indices,
                                          use_checkpoint=False, num_heads_fusion=mha,
-                                         fusion_drop=args.fusion_drop, pretrained_window_sizes=[0, 0, 0, 0]
+                                         fusion_drop=args.fusion_drop
                                          )
     if pretrained:
         print('Initializing Multi-modal Swin Transformer weights from ' + pretrained)
