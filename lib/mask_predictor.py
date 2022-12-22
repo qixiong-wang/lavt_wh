@@ -3,7 +3,7 @@ from torch import nn
 from torch.nn import functional as F
 import pdb
 from collections import OrderedDict
-from .lan_decoder import simple_lan_transformer
+from .lan_decoder import simple_lan_transformer1
 
 
 class CycleDecode(nn.Module):
@@ -72,7 +72,7 @@ class SimpleDecoding(nn.Module):
         self.relu2_2 = nn.ReLU()
 
         self.conv1_1 = nn.Conv2d(hidden_size, 2, 1)
-        self.lan_func = simple_lan_transformer(hidden_size, lan_size=768)
+        self.lan_func = simple_lan_transformer1(hidden_size, lan_size=768)
 
 
     def forward(self, lan, x_c4, x_c3, x_c2, x_c1):
