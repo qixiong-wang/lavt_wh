@@ -113,6 +113,7 @@ class ReferDataset(data.Dataset):
 
             tensor_embeddings = torch.cat(embedding, dim=-1)
             attention_mask = torch.cat(att, dim=-1)
+            
         else:
             choice_sent = np.random.choice(len(self.input_ids[index]))
             tensor_embeddings = self.input_ids[index][choice_sent]

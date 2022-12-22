@@ -462,8 +462,6 @@ class MultiModalSwinTransformer(nn.Module):
     def forward(self, x, l, l_mask):
         """Forward function."""
 
-        x_ms =  F.interpolate(x, scale_factor=0.75, mode='bilinear')
-
         x = self.patch_embed(x)
 
         Wh, Ww = x.size(2), x.size(3)
@@ -488,30 +486,7 @@ class MultiModalSwinTransformer(nn.Module):
                 out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
                 outs.append(out)
 
-        #### ms_test
-        x_ms = self.patch_embed(x_ms)
-        Wh, Ww = x_ms.size(2), x_ms.size(3)
-        if self.ape:
-            # interpolate the position embedding to the corresponding size
-            absolute_pos_embed = F.interpolate(self.absolute_pos_embed, size=(Wh, Ww), mode='bicubic')
-            x = (x + absolute_pos_embed).flatten(2).transpose(1, 2)  # B Wh*Ww C
-        else:
-            x_ms = x_ms.flatten(2).transpose(1, 2)
-        x_ms= self.pos_drop(x_ms)
-
-        outs_ms = []
-        for i in range(self.num_layers):
-            layer = self.layers[i]
-
-            x_out, H, W, x_ms, Wh, Ww = layer(x_ms, Wh, Ww, l, l_mask)
-            if i in self.out_indices:
-                norm_layer = getattr(self, f'norm{i}')
-                x_out = norm_layer(x_out)  # output of a Block has shape (B, H*W, dim)
-
-                out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
-                outs_ms.append(out)
-
-        return tuple(outs), tuple(outs_ms)
+        return tuple(outs)
 
     def train(self, mode=True):
         """Convert the model into training mode while keep layers freezed."""

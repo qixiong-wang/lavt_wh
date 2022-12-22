@@ -15,28 +15,14 @@ class _LAVTSimpleDecode(nn.Module):
     def forward(self, x, l_feats, l_mask):
         input_shape = x.shape[-2:]
         
-        features, features_ms = self.backbone(x, l_feats, l_mask)
+        features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
-        x_c1_ms, x_c2_ms, x_c3_ms, x_c4_ms = features_ms
-
-        # x_c1_ms = F.interpolate(x_c1_ms, size=x_c1.shape[-2:], mode='bilinear', align_corners=True)
-        # x_c2_ms = F.interpolate(x_c2_ms, size=x_c2.shape[-2:], mode='bilinear', align_corners=True)
-        # x_c3_ms = F.interpolate(x_c3_ms, size=x_c3.shape[-2:], mode='bilinear', align_corners=True)
-        # x_c4_ms = F.interpolate(x_c4_ms, size=x_c4.shape[-2:], mode='bilinear', align_corners=True)
-        
-        # x_c1 = (x_c1+x_c1_ms)/2
-        # x_c2 = (x_c2+x_c2_ms)/2
-        # x_c3 = (x_c3+x_c3_ms)/2
-        # x_c4 = (x_c4+x_c4_ms)/2
-
         x = self.classifier(x_c4, x_c3, x_c2, x_c1)
-        x_ms= self.classifier(x_c4_ms, x_c3_ms, x_c2_ms, x_c1_ms)
 
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-        x_ms = F.interpolate(x_ms, size=input_shape, mode='bilinear', align_corners=True)
         # x = x+x_ms
 
-        return x_ms
+        return x
 
 
 class LAVT(_LAVTSimpleDecode):

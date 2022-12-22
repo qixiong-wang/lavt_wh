@@ -51,8 +51,10 @@ def evaluate(model, data_loader, bert_model, device):
             attentions = attentions.squeeze(1)
             target = target.cpu().data.numpy()
             for j in range(sentences.size(-1)):
+                
                 if bert_model is not None:
                     last_hidden_states = bert_model(sentences[:, :, j], attention_mask=attentions[:, :, j])[0]
+
                     embedding = last_hidden_states.permute(0, 2, 1)
                     output = model(image, embedding, l_mask=attentions[:, :, j].unsqueeze(-1))
                 else:
