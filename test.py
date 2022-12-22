@@ -16,7 +16,7 @@ import utils
 import numpy as np
 from PIL import Image
 import torch.nn.functional as F
-
+from mmcv import reize
 
 def get_dataset(image_set, transform, args):
     from data.dataset_refer_bert import ReferDataset
@@ -91,7 +91,7 @@ def evaluate(model, data_loader, bert_model, device):
 
 
 def get_transform(args):
-    transforms = [T.Resize(args.img_size, args.img_size),
+    transforms = [
                   T.ToTensor(),
                   T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                   ]
