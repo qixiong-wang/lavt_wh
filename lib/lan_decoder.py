@@ -27,7 +27,7 @@ class simple_lan_transformer1(nn.Module):
     def __init__(self, hidden_size, lan_size):
         super(simple_lan_transformer1, self).__init__()
 
-        self.decoder_layer = nn.TransformerDecoderLayer(d_model=768, nhead=8)
+        self.decoder_layer = nn.TransformerDecoderLayer(d_model=768, nhead=12)
         self.transformer_model = nn.TransformerDecoder(self.decoder_layer, num_layers=1)
         self.conv1 = nn.Conv2d(hidden_size, lan_size, 3, padding=1, bias=False)
         self.bn1 = nn.BatchNorm2d(lan_size)
