@@ -109,7 +109,7 @@ class ReferDataset(data.Dataset):
         img = F.interpolate(img.unsqueeze(0),scale_factor=scale_factor,mode='bilinear').squeeze()
         target = F.interpolate(target.unsqueeze(0).unsqueeze(0).float(),scale_factor=scale_factor).squeeze().long()
 
-        if not self.eval_mode:
+        if self.split=='train':
             long_size = max(target.shape)
             padding_pixel_1 = (input_size-long_size)//2
             padding_pixel_2 = (input_size-long_size)//2 + (input_size-long_size)%2

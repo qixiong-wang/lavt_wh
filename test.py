@@ -16,7 +16,6 @@ import utils
 import numpy as np
 from PIL import Image
 import torch.nn.functional as F
-from mmcv import reize
 
 def get_dataset(image_set, transform, args):
     from data.dataset_refer_bert import ReferDataset
