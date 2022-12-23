@@ -15,7 +15,7 @@ class new_transform(object):
         self.RandomCrop = T.RandomCrop(args.img_size)
 
     def __call__(self, image, target):
-        image, target = self.Resize_diff(image, target)
+        # image, target = self.Resize_diff(image, target)
         image, target, flip_flag = self.HorizontalFlip(image, target)
         # image, target = self.RandomResize(image, target)
         # image, target = self.RandomCrop(image, target)

@@ -74,9 +74,7 @@ def IoU(pred, gt):
 
 
 def get_transform(args):
-    transforms = [T.Resize_diff(args.img_size, args.img_size, args.tar_size, args.tar_size),
-    #               T.Resize(args.img_size, args.img_size),
-                  T.ToTensor(),
+    transforms = [T.ToTensor(),
                   T.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])
                   ]
 
@@ -85,7 +83,7 @@ def get_transform(args):
 
 def criterion(input, target):
     weight = torch.FloatTensor([0.9, 1.1]).cuda()
-    return nn.functional.cross_entropy(input, target, weight=weight)
+    return nn.functional.cross_entropy(input, target, weight=weight, ignore_index=255)
 
 
 def evaluate(model, data_loader, bert_model):

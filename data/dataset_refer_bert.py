@@ -8,13 +8,14 @@ import numpy as np
 from PIL import Image
 import torchvision.transforms.functional as TF
 import random
-import pdb
+
 from bert.tokenization_bert import BertTokenizer
 
 import h5py
 from refer.refer import REFER
 
 from args import get_parser
+import torch.nn.functional as F
 
 # Dataset configuration initialization
 parser = get_parser()
@@ -35,6 +36,7 @@ class ReferDataset(data.Dataset):
         self.target_transform = target_transforms
         self.split = split
         self.refer = REFER(args.refer_data_root, args.dataset, args.splitBy)
+
         self.max_tokens = 20
 
         ref_ids = self.refer.getRefIds(split=self.split)
@@ -56,23 +58,19 @@ class ReferDataset(data.Dataset):
 
             sentences_for_ref = []
             attentions_for_ref = []
-            # print(11111111111111111111111)
+
             for i, (el, sent_id) in enumerate(zip(ref['sentences'], ref['sent_ids'])):
                 sentence_raw = el['raw']
                 attention_mask = [0] * self.max_tokens
                 padded_input_ids = [0] * self.max_tokens
 
-                # print(sentence_raw)
-
                 input_ids = self.tokenizer.encode(text=sentence_raw, add_special_tokens=True)
-                # print([sentence_raw] + input_ids)
 
                 # truncation of tokens
                 input_ids = input_ids[:self.max_tokens]
 
                 padded_input_ids[:len(input_ids)] = input_ids
-                attention_mask[:len(input_ids)] = [1]*len(input_ids)
-                # pdb.set_trace()
+                attention_mask[:len(input_ids)] = [1] * len(input_ids)
 
                 sentences_for_ref.append(torch.tensor(padded_input_ids).unsqueeze(0))
                 attentions_for_ref.append(torch.tensor(attention_mask).unsqueeze(0))
@@ -88,7 +86,6 @@ class ReferDataset(data.Dataset):
 
     def __getitem__(self, index):
         this_ref_id = self.ref_ids[index]
-        # print(this_ref_id)
         this_img_id = self.refer.getImgIds(this_ref_id)
         this_img = self.refer.Imgs[this_img_id[0]]
 
@@ -112,8 +109,39 @@ class ReferDataset(data.Dataset):
                 hflip = False
             # print(self.input_ids)
 
+        input_size = 480
+        long_size = max(target.shape)
+        scale_factor = input_size / long_size
+        img = F.interpolate(img.unsqueeze(0), scale_factor=scale_factor, mode='bilinear').squeeze()
+        target = F.interpolate(target.unsqueeze(0).unsqueeze(0).float(), scale_factor=scale_factor).squeeze().long()
+
+        if self.split == 'train':
+            long_size = max(target.shape)
+            padding_pixel_1 = (input_size - long_size) // 2
+            padding_pixel_2 = (input_size - long_size) // 2 + (input_size - long_size) % 2
+
+            if target.shape[0] < target.shape[1]:
+                img = F.pad(img, pad=(padding_pixel_1, padding_pixel_2, 0, 0))
+                target = F.pad(target, pad=(padding_pixel_1, padding_pixel_2, 0, 0), mode='constant', value=255)
+            else:
+                img = F.pad(img, pad=(0, 0, padding_pixel_1, padding_pixel_2))
+                target = F.pad(target, pad=(0, 0, padding_pixel_1, padding_pixel_2), mode='constant', value=255)
+
+            short_size = min(target.shape)
+            padding_pixel_1 = (input_size - short_size) // 2
+            padding_pixel_2 = (input_size - short_size) // 2 + (input_size - short_size) % 2
+
+            if target.shape[0] < target.shape[1]:
+                img = F.pad(img, pad=(0, 0, padding_pixel_1, padding_pixel_2))
+                target = F.pad(target, pad=(0, 0, padding_pixel_1, padding_pixel_2), mode='constant', value=255)
+            else:
+                img = F.pad(img, pad=(padding_pixel_1, padding_pixel_2, 0, 0))
+                target = F.pad(target, pad=(padding_pixel_1, padding_pixel_2, 0, 0), mode='constant', value=255)
+
+            assert target.shape[0] == input_size
+            assert target.shape[1] == input_size
+
         if self.eval_mode:
-            # print(1111111111111)
             embedding = []
             att = []
             for s in range(len(self.input_ids[index])):
@@ -128,15 +156,5 @@ class ReferDataset(data.Dataset):
             choice_sent = np.random.choice(len(self.input_ids[index]))
             tensor_embeddings = self.input_ids[index][choice_sent]
             attention_mask = self.attention_masks[index][choice_sent]
-            if hflip and ((2157 in tensor_embeddings) or (2187 in tensor_embeddings)):
-                # if 2157 in tensor_embeddings:
-                #     # print(11111111111111)
-                #     tensor_embeddings = 2187 * (tensor_embeddings == 2157) + tensor_embeddings * (tensor_embeddings != 2157)
-                # elif 2187 in tensor_embeddings:
-                #     tensor_embeddings = 2157 * (tensor_embeddings == 2187) + tensor_embeddings * (tensor_embeddings != 2187)
-                #     # print(bb, tensor_embeddings)
-                tensor_embeddings = (2187 * (tensor_embeddings == 2157) + 2157 * (tensor_embeddings == 2187)) + \
-                    (tensor_embeddings * (tensor_embeddings != 2157) * (tensor_embeddings != 2187))
-            # print(tensor_embeddings.shape)
 
         return img, target, tensor_embeddings, attention_mask

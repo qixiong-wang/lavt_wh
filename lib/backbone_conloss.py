@@ -606,7 +606,8 @@ class MMBasicLayer(nn.Module):
                 x = blk(x, attn_mask)  # output of a Block has shape (B, H*W, dim)
 
         # PWAM fusion
-        x_residual, l_residual = self.fusion(x, l, l_mask)
+        # pdb.set_trace()
+        x_residual, l_residual = self.fusion(x, l, l_mask, H, W)
         # apply a gate on the residual
         x = x + (self.res_gate(x_residual) * x_residual)
         l = l + self.W_l(l_residual)
@@ -640,7 +641,7 @@ class PWAM(nn.Module):
                                         nn.Dropout(dropout)
                                         )
 
-    def forward(self, x, l, l_mask):
+    def forward(self, x, l, l_mask, H, W):
         # input x shape: (B, H*W, dim)
 
         # dynamic Conv
@@ -648,7 +649,7 @@ class PWAM(nn.Module):
 
         vis = self.vis_project(x.permute(0, 2, 1))  # (B, dim, H*W)
 
-        lang, lang1 = self.image_lang_att(x, l, l_mask)  # (B, H*W, dim) (B, l_dim, N_l)
+        lang, lang1 = self.image_lang_att(x, l, l_mask, H, W)  # (B, H*W, dim) (B, l_dim, N_l)
 
         lang = lang.permute(0, 2, 1)  # (B, dim, H*W)
 
@@ -712,7 +713,7 @@ class SpatialImageLanguageAttention(nn.Module):
         # x = rearrange(x, 'b (h w) c -> b c h w', h=int(math.sqrt(x.shape[1])))
         # x = self.dy_conv(x)
         # x = rearrange(x, '  b c h w -> b (h w) c')
-        pdb.set_trace()
+        # pdb.set_trace()
 
         B, HW = x.size(0), x.size(1)
         x = x.permute(0, 2, 1)  # (B, key_channels, H*W)
@@ -790,7 +791,7 @@ class SpatialImageInteraction(nn.Module):
         self.refinelan31 = RefineLanSim(self.v_in_channels, self.l_in_channels, self.key_channels, kernel=(3,1), num_heads=1)
 
 
-    def forward(self, x, l, l_mask):
+    def forward(self, x, l, l_mask, H, W):
         # x shape: (B, H*W, v_in_channels)
         # l input shape: (B, l_in_channels, N_l)
         # l_mask shape: (B, N_l, 1)
@@ -804,9 +805,9 @@ class SpatialImageInteraction(nn.Module):
         value = value.reshape(B, self.num_heads, self.value_channels // self.num_heads, n_l)
         # (b, num_heads, self.value_channels//self.num_heads, n_l)
 
-        sim_mapv11 = self.refineimg11(x, l, l_mask)
-        sim_mapv33 = self.refineimg33(x, l, l_mask)
-        sim_mapv55 = self.refineimg55(x, l, l_mask)
+        sim_mapv11 = self.refineimg11(x, l, l_mask, H, W)
+        sim_mapv33 = self.refineimg33(x, l, l_mask, H, W)
+        sim_mapv55 = self.refineimg55(x, l, l_mask, H, W)
         sim_mapv = (sim_mapv11 + sim_mapv33 + sim_mapv55) / 3 # (B, num_heads, h*w, N_l)
 
         out_v = torch.matmul(sim_mapv, value.permute(0, 1, 3, 2))  # (B, num_heads, H*W, self.value_channels//num_heads)
@@ -870,7 +871,7 @@ class RefineVisualSim(nn.Module):
         )
 
 
-    def forward(self, x, l, l_mask):
+    def forward(self, x, l, l_mask, H, W):
         # x shape: (B, H*W, v_in_channels)
         # l input shape: (B, l_in_channels, N_l)
         # l_mask shape: (B, N_l, 1)
@@ -885,7 +886,7 @@ class RefineVisualSim(nn.Module):
 
         x = x.permute(0, 2, 1)  # (B, v_in_channels, H*W)
         x1 = self.f_query(x)
-        x1 = rearrange(x1, 'b c (h w) -> b c h w', h=int(math.sqrt(x.shape[2])))
+        x1 = rearrange(x1, 'b c (h w) -> b c h w', h=H)
         x2 = F.unfold(x1, kernel_size=self.kernel, stride=1, padding=self.kernel//2)
         # x2 = rearrange(x1, 'b c h w -> b c (h w)')
 
