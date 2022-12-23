@@ -115,10 +115,10 @@ class ReferDataset(data.Dataset):
 
         if target.shape[0]<target.shape[1]:
             img=F.pad(img,pad=(padding_pixel_1,padding_pixel_2,0,0))
-            target=F.pad(target,pad=(padding_pixel_1,padding_pixel_2,0,0),mode='constant',value= 255)
+            target=F.pad(target,pad=(padding_pixel_1,padding_pixel_2,0,0),mode='constant',value= 0)
         else:
             img=F.pad(img,pad=(0,0,padding_pixel_1,padding_pixel_2))
-            target=F.pad(target,pad=(0,0,padding_pixel_1,padding_pixel_2),mode= 'constant',value= 255)
+            target=F.pad(target,pad=(0,0,padding_pixel_1,padding_pixel_2),mode= 'constant',value= 0)
 
         short_size = min(target.shape)
         padding_pixel_1 = (input_size-short_size)//2
@@ -126,10 +126,10 @@ class ReferDataset(data.Dataset):
 
         if target.shape[0]<target.shape[1]:
             img=F.pad(img,pad=(0,0,padding_pixel_1,padding_pixel_2))
-            target=F.pad(target,pad=(0,0,padding_pixel_1,padding_pixel_2),mode= 'constant',value= 255)
+            target=F.pad(target,pad=(0,0,padding_pixel_1,padding_pixel_2),mode= 'constant',value= 0)
         else:
             img=F.pad(img,pad=(padding_pixel_1,padding_pixel_2,0,0))
-            target=F.pad(target,pad=(padding_pixel_1,padding_pixel_2,0,0),mode='constant',value= 255)
+            target=F.pad(target,pad=(padding_pixel_1,padding_pixel_2,0,0),mode='constant',value= 0)
 
         assert target.shape[0]==input_size 
         assert target.shape[1]==input_size
