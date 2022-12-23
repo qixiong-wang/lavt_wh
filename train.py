@@ -60,7 +60,7 @@ def get_transform(args):
 
 def criterion(input, target):
     weight = torch.FloatTensor([0.9, 1.1]).cuda()
-    return nn.functional.cross_entropy(input, target, weight=weight)
+    return nn.functional.cross_entropy(input, target, weight=weight, ignore_index=255)
 
 
 def evaluate(model, data_loader, bert_model):

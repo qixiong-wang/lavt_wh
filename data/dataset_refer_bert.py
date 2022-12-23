@@ -103,20 +103,36 @@ class ReferDataset(data.Dataset):
             # resize, from PIL to tensor, and mean and std normalization
             img, target = self.image_transforms(img, annot)
         
+        input_size = 480
         long_size = max(target.shape)
-        scale_factor = 480/long_size
+        scale_factor = input_size/long_size
         img = F.interpolate(img.unsqueeze(0),scale_factor=scale_factor,mode='bilinear').squeeze()
         target = F.interpolate(target.unsqueeze(0).unsqueeze(0).float(),scale_factor=scale_factor).squeeze().long()
 
+        long_size = max(target.shape)
+        padding_pixel_1 = (input_size-long_size)//2
+        padding_pixel_2 = (input_size-long_size)//2 + (input_size-long_size)%2
+
+        if target.shape[0]<target.shape[1]:
+            img=F.pad(img,pad=(padding_pixel_1,padding_pixel_2,0,0))
+            target=F.pad(target,pad=(padding_pixel_1,padding_pixel_2,0,0),mode='constant',value= 255)
+        else:
+            img=F.pad(img,pad=(0,0,padding_pixel_1,padding_pixel_2))
+            target=F.pad(target,pad=(0,0,padding_pixel_1,padding_pixel_2),mode= 'constant',value= 255)
+
         short_size = min(target.shape)
-        padding_pixel_1 = (480-short_size)//2
-        padding_pixel_2 = (480-short_size)//2 + (480-short_size)%2
+        padding_pixel_1 = (input_size-short_size)//2
+        padding_pixel_2 = (input_size-short_size)//2 + (input_size-short_size)%2
+
         if target.shape[0]<target.shape[1]:
             img=F.pad(img,pad=(0,0,padding_pixel_1,padding_pixel_2))
-            target=F.pad(target,pad=(0,0,padding_pixel_1,padding_pixel_2))
+            target=F.pad(target,pad=(0,0,padding_pixel_1,padding_pixel_2),mode= 'constant',value= 255)
         else:
             img=F.pad(img,pad=(padding_pixel_1,padding_pixel_2,0,0))
-            target=F.pad(target,pad=(padding_pixel_1,padding_pixel_2,0,0))
+            target=F.pad(target,pad=(padding_pixel_1,padding_pixel_2,0,0),mode='constant',value= 255)
+
+        assert target.shape[0]==input_size 
+        assert target.shape[1]==input_size
 
         if self.eval_mode:
             embedding = []
