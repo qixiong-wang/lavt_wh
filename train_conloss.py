@@ -275,26 +275,26 @@ def main(args):
             backbone_decay.append(m)
 
     if args.model != 'lavt_one':
-        # params_to_optimize = [
-        #     {'params': backbone_no_decay, 'weight_decay': 0.0},
-        #     {'params': backbone_decay},
-        #     {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
-        #     {"params": [p for p in single_model.contrastive.parameters() if p.requires_grad]},
-        #     # the following are the parameters of bert
-        #     {"params": reduce(operator.concat,
-        #                       [[p for p in single_bert_model.encoder.layer[i].parameters()
-        #                         if p.requires_grad] for i in range(10)])},
-        # ]
         params_to_optimize = [
             {'params': backbone_no_decay, 'weight_decay': 0.0},
             {'params': backbone_decay},
-            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad], 'lr':args.lr*2},
-            {"params": [p for p in single_model.contrastive.parameters() if p.requires_grad], 'lr':args.lr*2},
+            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
+            {"params": [p for p in single_model.contrastive.parameters() if p.requires_grad]},
             # the following are the parameters of bert
             {"params": reduce(operator.concat,
                               [[p for p in single_bert_model.encoder.layer[i].parameters()
                                 if p.requires_grad] for i in range(10)])},
         ]
+        # params_to_optimize = [
+        #     {'params': backbone_no_decay, 'weight_decay': 0.0},
+        #     {'params': backbone_decay},
+        #     {"params": [p for p in single_model.classifier.parameters() if p.requires_grad], 'lr':args.lr*2},
+        #     {"params": [p for p in single_model.contrastive.parameters() if p.requires_grad], 'lr':args.lr*2},
+        #     # the following are the parameters of bert
+        #     {"params": reduce(operator.concat,
+        #                       [[p for p in single_bert_model.encoder.layer[i].parameters()
+        #                         if p.requires_grad] for i in range(10)])},
+        # ]
 
     else:
         params_to_optimize = [
