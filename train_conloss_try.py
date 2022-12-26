@@ -367,10 +367,9 @@ def main(args):
                                                             'model_best_{}.pth'.format(args.model_id)))
             best_oIoU = overallIoU
             log_string('The best_performance is {}'.format(best_oIoU))
-            # np.save((os.path.join(log_dir, 'best_performance.npy')), best_oIoU.cpu().numpy())
+            np.save((os.path.join(log_dir, 'best_performance.npy')), best_oIoU.cpu().numpy())
 
     # summarize
-    log_string('The final_best_performance is {}'.format(best_oIoU))
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     log_string('Training time {}'.format(total_time_str))
