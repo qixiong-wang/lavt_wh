@@ -1,0 +1,11 @@
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
+RANK and WORLD_SIZE in environment: 0/1
