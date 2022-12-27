@@ -6,8 +6,8 @@ def get_parser():
     parser.add_argument('--amsgrad', action='store_true',
                         help='if true, set amsgrad to True in an Adam or AdamW optimizer.')
     parser.add_argument('-b', '--batch-size', default=8, type=int)
-    parser.add_argument('--bert_tokenizer', default='bert-base-uncased', help='BERT tokenizer')
-    parser.add_argument('--ck_bert', default='bert-base-uncased', help='pre-trained BERT weights')
+    parser.add_argument('--bert_tokenizer', default='/mnt/petrelfs/huyutao/pretrained_model/bert/bert_base_cased', help='BERT tokenizer')
+    parser.add_argument('--ck_bert', default='/mnt/petrelfs/huyutao/pretrained_model/bert/bert_base_cased', help='pre-trained BERT weights')
     parser.add_argument('--dataset', default='refcoco', help='refcoco, refcoco+, or refcocog')
     parser.add_argument('--ddp_trained_weights', action='store_true',
                         help='Only needs specified when testing,'
