@@ -283,7 +283,7 @@ def main(args):
             {'params': backbone_no_decay, 'weight_decay': 0.0},
             {'params': backbone_decay},
             {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
-            {"params": [p for p in single_model.contrastive.parameters() if p.requires_grad]},
+            # {"params": [p for p in single_model.contrastive.parameters() if p.requires_grad]},
             # the following are the parameters of bert
             {"params": reduce(operator.concat,
                               [[p for p in single_bert_model.encoder.layer[i].parameters()
@@ -309,14 +309,14 @@ def main(args):
                                   )
 
     # learning rate scheduler
-    warm_up_iter = 800
-    lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
-            (1 - x / (len(data_loader) * args.epochs)) ** 0.9
+    # warm_up_iter = 800
+    # lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
+    #         (1 - x / (len(data_loader) * args.epochs)) ** 0.9
+    #
+    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
 
-    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
-
-    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
-    #                                                  lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
+                                                     lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
 
     # housekeeping
     start_time = time.time()
@@ -328,8 +328,11 @@ def main(args):
         optimizer.load_state_dict(checkpoint['optimizer'])
         lr_scheduler.load_state_dict(checkpoint['lr_scheduler'])
         resume_epoch = checkpoint['epoch']
+        if os.path.exists(os.path.join(log_dir, 'best_performance.npy')):
+            best_oIoU = np.float(np.load((os.path.join(log_dir, 'best_performance.npy'))))
     else:
         resume_epoch = -999
+    log_string('Training begin, the previous best_performance is {}'.format(best_oIoU))
 
     iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
@@ -356,8 +359,11 @@ def main(args):
             utils.save_on_master(dict_to_save, os.path.join(args.output_dir,
                                                             'model_best_{}.pth'.format(args.model_id)))
             best_oIoU = overallIoU
+            log_string('The best_performance is {}'.format(best_oIoU))
+            np.save((os.path.join(log_dir, 'best_performance.npy')), best_oIoU.cpu().numpy())
 
     # summarize
+    log_string('The final_best_performance is {}'.format(best_oIoU))
     total_time = time.time() - start_time
     total_time_str = str(datetime.timedelta(seconds=int(total_time)))
     log_string('Training time {}'.format(total_time_str))
