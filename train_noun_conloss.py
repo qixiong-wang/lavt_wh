@@ -44,12 +44,13 @@ def setup_seed(seed):
     random.seed(seed)
     torch.backends.cudnn.deterministic = True
 
-def get_dataset(image_set, transform, args):
+def get_dataset(image_set, transform, args, eval_mode):
     from data.dataset_refer_bert import ReferDataset
     ds = ReferDataset(args,
                       split=image_set,
                       image_transforms=transform,
-                      target_transforms=None
+                      target_transforms=None,
+                      eval_mode=eval_mode
                       )
     num_classes = 2
 
@@ -113,24 +114,25 @@ def evaluate(model, data_loader, bert_model):
             sentences1 = sentences1.squeeze(1)
             attentions = attentions.squeeze(1)
 
-            if bert_model is not None:
-                last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]
-                embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
-                attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
-                embedding1 = embedding
-                loss_contra, loss_lansim, output = model(image, embedding, embedding1, l_mask=attentions)
-            else:
-                output = model(image, sentences, l_mask=attentions)
+            for j in range(sentences.size(-1)):
+                if bert_model is not None:
+                    last_hidden_states = bert_model(sentences[:, :, j], attention_mask=attentions[:, :, j])[0]
+                    embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
+                    # attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
+                    embedding1 = embedding
+                    loss_contra, loss_lansim, output = model(image, embedding, embedding1, l_mask=attentions[:, :, j].unsqueeze(-1))
+                else:
+                    output = model(image, sentences, l_mask=attentions)
 
-            iou, I, U = IoU(output, target)
-            acc_ious += iou
-            mean_IoU.append(iou)
-            cum_I += I
-            cum_U += U
-            for n_eval_iou in range(len(eval_seg_iou_list)):
-                eval_seg_iou = eval_seg_iou_list[n_eval_iou]
-                seg_correct[n_eval_iou] += (iou >= eval_seg_iou)
-            seg_total += 1
+                iou, I, U = IoU(output, target)
+                acc_ious += iou
+                mean_IoU.append(iou)
+                cum_I += I
+                cum_U += U
+                for n_eval_iou in range(len(eval_seg_iou_list)):
+                    eval_seg_iou = eval_seg_iou_list[n_eval_iou]
+                    seg_correct[n_eval_iou] += (iou >= eval_seg_iou)
+                seg_total += 1
         iou = acc_ious / total_its
 
     mean_IoU = np.array(mean_IoU)
@@ -217,10 +219,10 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
 def main(args):
     dataset, num_classes = get_dataset("train",
                                        new_transform(args=args),
-                                       args=args)
+                                       args=args, eval_mode=False)
     dataset_test, _ = get_dataset("val",
                                   get_transform(args=args),
-                                  args=args)
+                                  args=args, eval_mode=True)
 
     # batch sampler
     log_string(f"local rank {args.local_rank} / global rank {utils.get_rank()} successfully built train dataset.")
