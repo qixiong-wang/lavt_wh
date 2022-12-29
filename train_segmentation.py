@@ -132,20 +132,8 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
     for data in metric_logger.log_every(data_loader, print_freq, header):
         total_its += 1
         image, target = data
-        import pdb
-        pdb.set_trace()
-
-        sentences = sentences.squeeze(1)
-        attentions = attentions.squeeze(1)
-
-        if bert_model is not None:
-            last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]  # (6, 10, 768)
-            embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
-            attentions = attentions.unsqueeze(dim=-1)  # (batch, N_l, 1)
-            output = model(image, embedding, l_mask=attentions)
-        else:
-            output = model(image, sentences, l_mask=attentions)
-
+        output = model(image)
+        
         loss = criterion(output, target)
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()
@@ -281,23 +269,23 @@ def main(args):
                         iterations, bert_model)
         # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
 
-        print('Average object IoU {}'.format(iou))
-        print('Overall IoU {}'.format(overallIoU))
-        save_checkpoint = (best_oIoU < overallIoU)
-        if save_checkpoint:
-            print('Better epoch: {}\n'.format(epoch))
-            if single_bert_model is not None:
-                dict_to_save = {'model': single_model.state_dict(), 'bert_model': single_bert_model.state_dict(),
-                                'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
-                                'lr_scheduler': lr_scheduler.state_dict()}
-            else:
-                dict_to_save = {'model': single_model.state_dict(),
-                                'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
-                                'lr_scheduler': lr_scheduler.state_dict()}
+        # print('Average object IoU {}'.format(iou))
+        # print('Overall IoU {}'.format(overallIoU))
+        # save_checkpoint = (best_oIoU < overallIoU)
+        # if save_checkpoint:
+        #     print('Better epoch: {}\n'.format(epoch))
+        #     if single_bert_model is not None:
+        #         dict_to_save = {'model': single_model.state_dict(), 'bert_model': single_bert_model.state_dict(),
+        #                         'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
+        #                         'lr_scheduler': lr_scheduler.state_dict()}
+        #     else:
+        #         dict_to_save = {'model': single_model.state_dict(),
+        #                         'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
+        #                         'lr_scheduler': lr_scheduler.state_dict()}
 
-            utils.save_on_master(dict_to_save, os.path.join(args.output_dir,
-                                                            'model_best_{}.pth'.format(args.model_id)))
-            best_oIoU = overallIoU
+        #     utils.save_on_master(dict_to_save, os.path.join(args.output_dir,
+        #                                                     'model_best_{}.pth'.format(args.model_id)))
+        #     best_oIoU = overallIoU
 
     # summarize
     total_time = time.time() - start_time

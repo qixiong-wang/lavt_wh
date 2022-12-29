@@ -6,6 +6,27 @@ from torch.nn import functional as F
 from bert.modeling_bert import BertModel
 
 
+
+class _Swin_SimpleDecode(nn.Module):
+    def __init__(self, backbone, classifier):
+        super(_Swin_SimpleDecode, self).__init__()
+        self.backbone = backbone
+        self.classifier = classifier
+
+    def forward(self, x):
+        input_shape = x.shape[-2:]
+        features = self.backbone(x)
+        x_c1, x_c2, x_c3, x_c4 = features
+        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+
+        return x
+
+
+class Swin_seg(_Swin_SimpleDecode):
+    pass
+
+
 class _LAVTSimpleDecode(nn.Module):
     def __init__(self, backbone, classifier):
         super(_LAVTSimpleDecode, self).__init__()
