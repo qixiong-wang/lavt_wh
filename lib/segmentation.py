@@ -5,7 +5,7 @@ from .backbone import MultiModalSwinTransformer
 from .backbone_seg import SwinTransformer
 from ._utils import LAVT, LAVTOne, Swin_seg
 
-__all__ = ['lavt', 'lavt_one']
+__all__ = ['lavt', 'lavt_one', 'swin_seg']
 
 
 def _segm_swin(pretrained, args):
@@ -69,7 +69,7 @@ def _load_model_swin(pretrained, args):
     model = _segm_swin(pretrained, args)
     return model
 
-def lavt(pretrained='', args=None):
+def swin_seg(pretrained='', args=None):
     return _load_model_swin(pretrained, args)
 
 

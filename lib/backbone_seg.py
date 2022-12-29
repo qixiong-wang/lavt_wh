@@ -479,6 +479,7 @@ class SwinTransformer(nn.Module):
 
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
+
                 x_out = norm_layer(x_out)  # output of a Block has shape (B, H*W, dim)
                 out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
                 outs.append(out)
@@ -539,8 +540,6 @@ class MMBasicLayer(nn.Module):
         else:
             self.downsample = None
         # initialize the gate to 0
-        nn.init.zeros_(self.res_gate[0].weight)
-        nn.init.zeros_(self.res_gate[2].weight)
 
     def forward(self, x, H, W):
         """ Forward function.
@@ -581,6 +580,6 @@ class MMBasicLayer(nn.Module):
         if self.downsample is not None:
             x_down = self.downsample(x, H, W)
             Wh, Ww = (H + 1) // 2, (W + 1) // 2
-            return x_down, H, W, x_down, Wh, Ww
+            return x, H, W, x_down, Wh, Ww
         else:
             return x, H, W, x, H, W

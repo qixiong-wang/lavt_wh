@@ -57,7 +57,8 @@ def get_transform(args):
 
 
 def criterion(input, target):
-    weight = torch.FloatTensor([0.9, 1.1]).cuda()
+    # weight = torch.FloatTensor([0.9, 1.1]).cuda()
+    weight = None
     return nn.functional.cross_entropy(input, target, weight=weight)
 
 
@@ -121,7 +122,7 @@ def evaluate(model, data_loader, bert_model):
 
 
 def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, print_freq,
-                    iterations, bert_model):
+                    iterations):
     model.train()
     metric_logger = utils.MetricLogger(delimiter="  ")
     metric_logger.add_meter('lr', utils.SmoothedValue(window_size=1, fmt='{value}'))
@@ -132,8 +133,9 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
     for data in metric_logger.log_every(data_loader, print_freq, header):
         total_its += 1
         image, target = data
+        image, target= image.cuda(non_blocking=True), target.cuda(non_blocking=True)
         output = model(image)
-        
+
         loss = criterion(output, target)
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()
@@ -145,9 +147,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
         iterations += 1
         metric_logger.update(loss=loss.item(), lr=optimizer.param_groups[0]["lr"])
 
-        del image, target, sentences, attentions, loss, output, data
-        if bert_model is not None:
-            del last_hidden_states, embedding
+        del image, target, loss, output, data
 
         gc.collect()
         torch.cuda.empty_cache()
@@ -187,24 +187,10 @@ def main(args):
     model = torch.nn.parallel.DistributedDataParallel(model, device_ids=[args.local_rank], find_unused_parameters=True)
     single_model = model.module
 
-    if args.model != 'lavt_one':
-        model_class = BertModel
-        bert_model = model_class.from_pretrained(args.ck_bert)
-        bert_model.pooler = None  # a work-around for a bug in Transformers = 3.0.2 that appears for DistributedDataParallel
-        bert_model.cuda()
-        bert_model = torch.nn.SyncBatchNorm.convert_sync_batchnorm(bert_model)
-        bert_model = torch.nn.parallel.DistributedDataParallel(bert_model, device_ids=[args.local_rank])
-        single_bert_model = bert_model.module
-    else:
-        bert_model = None
-        single_bert_model = None
-
     # resume training
     if args.resume:
         checkpoint = torch.load(args.resume, map_location='cpu')
         single_model.load_state_dict(checkpoint['model'])
-        if args.model != 'lavt_one':
-            single_bert_model.load_state_dict(checkpoint['bert_model'])
 
     # parameters to optimize
     backbone_no_decay = list()
@@ -215,26 +201,12 @@ def main(args):
         else:
             backbone_decay.append(m)
 
-    if args.model != 'lavt_one':
-        params_to_optimize = [
-            {'params': backbone_no_decay, 'weight_decay': 0.0},
-            {'params': backbone_decay},
-            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
-            # the following are the parameters of bert
-            {"params": reduce(operator.concat,
-                              [[p for p in single_bert_model.encoder.layer[i].parameters()
-                                if p.requires_grad] for i in range(10)])},
-        ]
-    else:
-        params_to_optimize = [
-            {'params': backbone_no_decay, 'weight_decay': 0.0},
-            {'params': backbone_decay},
-            {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
-            # the following are the parameters of bert
-            {"params": reduce(operator.concat,
-                              [[p for p in single_model.text_encoder.encoder.layer[i].parameters()
-                                if p.requires_grad] for i in range(10)])},
-        ]
+    params_to_optimize = [
+        {'params': backbone_no_decay, 'weight_decay': 0.0},
+        {'params': backbone_decay},
+        {"params": [p for p in single_model.classifier.parameters() if p.requires_grad]},
+
+    ]
 
     # optimizer
     optimizer = torch.optim.AdamW(params_to_optimize,
@@ -246,9 +218,6 @@ def main(args):
     # learning rate scheduler
     lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
                                                      lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
-
-
-
     # housekeeping
     start_time = time.time()
     iterations = 0
@@ -266,7 +235,7 @@ def main(args):
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
         train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, args.print_freq,
-                        iterations, bert_model)
+                        iterations)
         # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
 
         # print('Average object IoU {}'.format(iou))

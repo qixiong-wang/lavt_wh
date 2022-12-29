@@ -479,6 +479,8 @@ class MultiModalSwinTransformer(nn.Module):
 
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
+                import pdb
+                pdb.set_trace()
                 x_out = norm_layer(x_out)  # output of a Block has shape (B, H*W, dim)
 
                 out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()
@@ -592,7 +594,8 @@ class MMBasicLayer(nn.Module):
                 x = checkpoint.checkpoint(blk, x, attn_mask)
             else:
                 x = blk(x, attn_mask)  # output of a Block has shape (B, H*W, dim)
-
+        import pdb
+        pdb.set_trace()
         # PWAM fusion
         x_residual = self.fusion(x, l, l_mask)
         # apply a gate on the residual
