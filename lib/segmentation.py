@@ -65,12 +65,8 @@ def _segm_swin(pretrained, args):
     model = base_model(backbone, classifier)
     return model
     
-def _load_model_swin(pretrained, args):
-    model = _segm_swin(pretrained, args)
-    return model
-
 def swin_seg(pretrained='', args=None):
-    return _load_model_swin(pretrained, args)
+    return  _segm_swin(pretrained, args)
 
 
 

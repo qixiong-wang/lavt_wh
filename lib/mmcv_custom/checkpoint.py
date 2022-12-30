@@ -106,7 +106,6 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             else:
                 print(err_msg)
 
-
 def load_url_dist(url, model_dir=None):
     """In distributed setting, this function only download checkpoint at local
     rank 0."""
@@ -305,6 +304,7 @@ def load_checkpoint(model,
         dict or OrderedDict: The loaded checkpoint.
     """
     checkpoint = _load_checkpoint(filename, map_location)
+
     # OrderedDict is a subclass of dict
     if not isinstance(checkpoint, dict):
         raise RuntimeError(
@@ -357,6 +357,7 @@ def load_checkpoint(model,
 
     # load state_dict
     load_state_dict(model, state_dict, strict, logger)
+
     return checkpoint
 
 

@@ -251,9 +251,12 @@ def main(args):
         #         dict_to_save = {'model': single_model.state_dict(),
         #                         'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
         #                         'lr_scheduler': lr_scheduler.state_dict()}
+        dict_to_save = {'model': single_model.state_dict(),
+                        'optimizer': optimizer.state_dict(), 'epoch': epoch, 'args': args,
+                        'lr_scheduler': lr_scheduler.state_dict()}
 
-        #     utils.save_on_master(dict_to_save, os.path.join(args.output_dir,
-        #                                                     'model_best_{}.pth'.format(args.model_id)))
+        utils.save_on_master(dict_to_save, os.path.join(args.output_dir,
+                                                        'model_swinseg_{}.pth'.format(epoch)))
         #     best_oIoU = overallIoU
 
     # summarize
