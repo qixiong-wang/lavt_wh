@@ -36,6 +36,33 @@ class LAVT(_LAVTSimpleDecode):
     pass
 
 
+class _LAVTSimpleDecodeconloss_endconv(nn.Module):
+    def __init__(self, backbone, classifier):
+        super(_LAVTSimpleDecodeconloss_endconv, self).__init__()
+        self.backbone = backbone
+        self.classifier = classifier
+        self.cossim = lan_cossim_fun()
+        self.contrastive = Nce_Contrast_Loss()
+
+    def forward(self, x, l_feats, l_feats1, l_mask):
+
+        input_shape = x.shape[-2:]
+        l_new, features = self.backbone(x, l_feats, l_mask)
+        x_c1, x_c2, x_c3, x_c4 = features
+        defea, l1, x = self.classifier(l_feats1, x_c4, x_c3, x_c2, x_c1, input_shape)
+        # x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+        if defea.shape[0] > 1:
+            loss_contrastive = self.contrastive(defea, l_new)
+            loss_sim = self.cossim(l_new, l1, l_mask)
+        else:
+            loss_contrastive = 0
+            loss_sim = 0
+
+        return loss_contrastive, loss_sim, x
+
+class LAVT1(_LAVTSimpleDecodeconloss_endconv):
+    pass
+
 class _LAVTSimpleDecodeconloss(nn.Module):
     def __init__(self, backbone, classifier):
         super(_LAVTSimpleDecodeconloss, self).__init__()

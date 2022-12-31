@@ -190,7 +190,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
 
         # loss_lansim = cossim(lanp, lanm, attentions)
         loss_seg = criterion(output, target)
-        loss = loss_seg + loss_lansim * 0.01 + loss_contra * 0.01
+        loss = loss_seg + loss_lansim * 0.01 + loss_contra * 0.0001
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()
         optimizer.step()
