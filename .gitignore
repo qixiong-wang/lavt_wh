@@ -1,5 +1,5 @@
 
-data
+
 .vscode
 .idea
 __pycache__/*
@@ -14,3 +14,5 @@ refer/data/*
 vis*
 *.zip
 *.log
+*.pyc
+*.gv
