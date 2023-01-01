@@ -288,7 +288,7 @@ def total_area_to_metrics(total_area_intersect,
 
 class CocoDataset(Dataset):
 
-    CLASSES = ('person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
+    CLASSES = ('background', 'person', 'bicycle', 'car', 'motorcycle', 'airplane', 'bus',
                'train', 'truck', 'boat', 'traffic light', 'fire hydrant',
                'stop sign', 'parking meter', 'bench', 'bird', 'cat', 'dog',
                'horse', 'sheep', 'cow', 'elephant', 'bear', 'zebra', 'giraffe',
@@ -303,7 +303,7 @@ class CocoDataset(Dataset):
                'oven', 'toaster', 'sink', 'refrigerator', 'book', 'clock',
                'vase', 'scissors', 'teddy bear', 'hair drier', 'toothbrush')
 
-    PALETTE = [(220, 20, 60), (119, 11, 32), (0, 0, 142), (0, 0, 230),
+    PALETTE = [(0,0,0), (220, 20, 60), (119, 11, 32), (0, 0, 142), (0, 0, 230),
                (106, 0, 228), (0, 60, 100), (0, 80, 100), (0, 0, 70),
                (0, 0, 192), (250, 170, 30), (100, 170, 30), (220, 220, 0),
                (175, 116, 175), (250, 0, 30), (165, 42, 42), (255, 77, 255),
@@ -499,6 +499,7 @@ class CocoDataset(Dataset):
         ann_info = self.get_ann_info(idx)
 
         masks = np.zeros((len(self.CLASSES), img_info['height'], img_info['width']))
+        masks[0] = masks[0] + 0.5
         for i in range(len(ann_info['labels'])):
             rles = maskUtils.frPyObjects(ann_info['masks'][i], img_info['height'], img_info['width'])
             rle = maskUtils.merge(rles)
@@ -509,6 +510,7 @@ class CocoDataset(Dataset):
 
         masks = torch.tensor(masks)
         masks = torch.topk(masks, 1,dim=0)[1].squeeze()
+        
         img = mmcv.imnormalize(img, self.mean, self.std, self.to_rgb)
         img = torch.tensor(img).permute(2,0,1)
 
