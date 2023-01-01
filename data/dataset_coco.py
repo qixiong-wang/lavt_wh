@@ -554,29 +554,11 @@ class CocoDataset(Dataset):
         eval_results = {}
         # test a list of files
 
-        if mmcv.is_list_of(results, np.ndarray) or mmcv.is_list_of(results, str):
-            if gt_seg_maps is None:
-                gt_seg_maps = self.get_gt_seg_maps()
-            num_classes = len(self.CLASSES)
-
-            ret_metrics = eval_metrics(
-                results,
-                gt_seg_maps,
-                num_classes,
-                self.ignore_index,
-                metric,
-                label_map=dict(),
-                reduce_zero_label=self.reduce_zero_label)
-        # test a list of pre_eval_results
-        else:
-
-            ret_metrics = pre_eval_to_metrics(results, metric)
+        ret_metrics = pre_eval_to_metrics(results, metric)
 
         # Because dataset.CLASSES is required for per-eval.
-        if self.CLASSES is None:
-            class_names = tuple(range(num_classes))
-        else:
-            class_names = self.CLASSES
+    
+        class_names = self.CLASSES
 
         # summary table
         ret_metrics_summary = OrderedDict({

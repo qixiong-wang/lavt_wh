@@ -17,11 +17,11 @@ import numpy as np
 from PIL import Image
 import torch.nn.functional as F
 import mmcv
-
+from data.dataset_coco import intersect_and_union
 
 def get_dataset(image_set, transform, args):
     from data.dataset_coco import CocoDataset
-    ds = CocoDataset(ann_file='annotations/instances_val2014.json',)
+    ds = CocoDataset(ann_file='annotations/instances_train2014.json',)
     num_classes = 80
 
     return ds, num_classes
@@ -47,7 +47,7 @@ def computeIoU(pred_seg, gd_seg):
 def main(args):
     
     device = torch.device(args.device)
-    dataset_test, _ = get_dataset(args.split, get_transform(args=args), args)
+    dataset_test, num_classes = get_dataset(args.split, get_transform(args=args), args)
     test_sampler = torch.utils.data.SequentialSampler(dataset_test)
     data_loader_test = torch.utils.data.DataLoader(dataset_test, batch_size=1,
                                                    sampler=test_sampler, num_workers=args.workers)
@@ -57,13 +57,7 @@ def main(args):
     single_model.load_state_dict(checkpoint['model'])
     model = single_model.to(device)
 
-    model_class = BertModel
-    single_bert_model = model_class.from_pretrained(args.ck_bert)
     # work-around for a transformers bug; need to update to a newer version of transformers to remove these two lines
-    if args.ddp_trained_weights:
-        single_bert_model.pooler = None
-    single_bert_model.load_state_dict(checkpoint['bert_model'])
-    bert_model = single_bert_model.to(device)
 
     model.eval()
     metric_logger = utils.MetricLogger(delimiter="  ")
@@ -72,12 +66,26 @@ def main(args):
 
     header = 'Test:'
     with torch.no_grad():
+        pre_eval_results = []
         for data in metric_logger.log_every(data_loader_test, 100, header):
             image, target = data
             image, target= image.to(device), target.to(device)
             output = model(image)
-            import pdb
-            pdb.set_trace()
+            output_mask = output.cpu().argmax(1).data.numpy()
+            target = target.cpu().data.numpy()
+            pre_eval_results.append(
+                intersect_and_union(
+                    output_mask,
+                    target,
+                    num_classes,
+                    ignore_index=255,
+                    # as the labels has been converted when dataset initialized
+                    # in `get_palette_for_custom_classes ` this `label_map`
+                    # should be `dict()`, see
+                    # https://github.com/open-mmlab/mmsegmentation/issues/1415
+                    # for more ditails
+                    label_map=dict()))
+        dataset_test.evaluate(pre_eval_results) 
 
 if __name__ == "__main__":
     from args import get_parser
