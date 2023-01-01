@@ -60,65 +60,7 @@ def criterion(input, target):
     # weight = torch.FloatTensor([0.9, 1.1]).cuda()
     weight = None
     return nn.functional.cross_entropy(input, target, weight=weight)
-
-
-def evaluate(model, data_loader, bert_model):
-    model.eval()
-    metric_logger = utils.MetricLogger(delimiter="  ")
-    header = 'Test:'
-    total_its = 0
-    acc_ious = 0
-
-    # evaluation variables
-    cum_I, cum_U = 0, 0
-    eval_seg_iou_list = [.5, .6, .7, .8, .9]
-    seg_correct = np.zeros(len(eval_seg_iou_list), dtype=np.int32)
-    seg_total = 0
-    mean_IoU = []
-
-    with torch.no_grad():
-        for data in metric_logger.log_every(data_loader, 100, header):
-            total_its += 1
-            image, target, sentences, attentions = data
-            image, target, sentences, attentions = image.cuda(non_blocking=True),\
-                                                   target.cuda(non_blocking=True),\
-                                                   sentences.cuda(non_blocking=True),\
-                                                   attentions.cuda(non_blocking=True)
-
-            sentences = sentences.squeeze(1)
-            attentions = attentions.squeeze(1)
-
-            if bert_model is not None:
-                last_hidden_states = bert_model(sentences, attention_mask=attentions)[0]
-                embedding = last_hidden_states.permute(0, 2, 1)  # (B, 768, N_l) to make Conv1d happy
-                attentions = attentions.unsqueeze(dim=-1)  # (B, N_l, 1)
-                output = model(image, embedding, l_mask=attentions)
-            else:
-                output = model(image, sentences, l_mask=attentions)
-
-            iou, I, U = IoU(output, target)
-            acc_ious += iou
-            mean_IoU.append(iou)
-            cum_I += I
-            cum_U += U
-            for n_eval_iou in range(len(eval_seg_iou_list)):
-                eval_seg_iou = eval_seg_iou_list[n_eval_iou]
-                seg_correct[n_eval_iou] += (iou >= eval_seg_iou)
-            seg_total += 1
-        iou = acc_ious / total_its
-
-    mean_IoU = np.array(mean_IoU)
-    mIoU = np.mean(mean_IoU)
-    print('Final results:')
-    print('Mean IoU is %.2f\n' % (mIoU * 100.))
-    results_str = ''
-    for n_eval_iou in range(len(eval_seg_iou_list)):
-        results_str += '    precision@%s = %.2f\n' % \
-                       (str(eval_seg_iou_list[n_eval_iou]), seg_correct[n_eval_iou] * 100. / seg_total)
-    results_str += '    overall IoU = %.2f\n' % (cum_I * 100. / cum_U)
-    print(results_str)
-
-    return 100 * iou, 100 * cum_I / cum_U
+    
 
 
 def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoch, print_freq,
