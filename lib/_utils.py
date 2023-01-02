@@ -1,92 +1,82 @@
-import pdb
 from collections import OrderedDict
 import sys
 import torch
 from torch import nn
 from torch.nn import functional as F
 from bert.modeling_bert import BertModel
-from some_functions import lan_cossim_fun
+
+from .memory_queue import Memory_queue
+from mmcv.runner import get_dist_info
+import torch.distributed as dist
 
 class _LAVTSimpleDecode(nn.Module):
     def __init__(self, backbone, neck, classifier):
         super(_LAVTSimpleDecode, self).__init__()
         self.backbone = backbone
+        self.number_of_instance =200
+        self.memory_queue = Memory_queue(number_of_instance=1000, feat_len=256)
+        self.neck = neck
         self.classifier = classifier
-        self.neck = neck 
-        self.cossim = lan_cossim_fun()
+        self.lan_embedding = nn.Linear(768, 256)
 
-    def forward(self, x, l_feats, l_feats1, l_mask):
-
+    def forward(self, x, l_feats, l_mask, target=None):
         input_shape = x.shape[-2:]
-        l0, features = self.backbone(x, l_feats, l_mask)
-        x_c1, x_c2, x_c3, x_c4 = features
-        l1, x = self.classifier(l_feats1, x_c4, x_c3, x_c2, x_c1)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-        loss_sim = self.cossim(l0, l1, l_mask)
-        # pdb.set_trace()
+        features = self.backbone(x, l_feats, l_mask)
+        x_c1, x_c2, x_c3, x_c4 = self.neck(features)
+        # x_c1, x_c2, x_c3, x_c4 = features
         
-        return loss_sim, x
+        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+    
+        vis_embedding = torch.mean(F.softmax(x,dim=1)[:,:1]*x_c1,dim=[2,3])
+
+        # vis_embedding = vis_embedding.squeeze()
+
+        if len(vis_embedding.shape)>1: ### eval
+            vis_embedding = F.normalize(vis_embedding,dim=1)
+            batch_size=l_mask.shape[0]
+            l_feat_last = []
+            for i in range(batch_size):
+                l_feat_last.append(l_feats[i,:,torch.where(l_mask[i]==1)[0][-1]])
+            l_feat_last = torch.stack(l_feat_last)
+            l_feat_last = self.lan_embedding(l_feat_last)
+            l_feat_last = F.normalize(l_feat_last,dim=1)
+            rank, world_size = get_dist_info()
+            vis_embedding_queue, l_feat_queue = self.memory_queue(vis_embedding,l_feat_last)
+
+            contrast_label = torch.eye(batch_size).cuda(l_feat_last.device)
+            # img_text_logits = F.softmax(10*torch.matmul(vis_embedding_queue,l_feat_last.permute(1,0)),dim=0)
+            # text_img_logits = F.softmax(10*torch.matmul(l_feat_queue,vis_embedding.permute(1,0)),dim=0)
+            img_text_logits = F.softmax(10*torch.matmul(vis_embedding_queue,vis_embedding.permute(1,0)),dim=0)
+            text_img_logits = F.softmax(10*torch.matmul(l_feat_queue,l_feat_last.permute(1,0)),dim=0)
+            
+            # img_text_logits = F.softmax(10*torch.matmul(vis_embedding,l_feat_last.permute(1,0)),dim=0)
+            # text_img_logits = F.softmax(10*torch.matmul(l_feat_last,vis_embedding.permute(1,0)),dim=0)
+  
+
+            pos_ind = torch.arange(batch_size).cuda(l_feat_last.device) + self.memory_queue.tail - batch_size*world_size
+            pos_ind = torch.where(pos_ind<0,pos_ind+self.number_of_instance,pos_ind)
+            # if l_feat_last.get_device() == 0:
+            #     import pdb
+            #     pdb.set_trace()
+            # else:
+            #     dist.barrier()
+            loss_recon_l = -torch.multiply(contrast_label,torch.log(img_text_logits[pos_ind]))
+            loss_recon_v = -torch.multiply(contrast_label,torch.log(text_img_logits[pos_ind]))
+
+            loss_recon = loss_recon_l + loss_recon_v
+            # if self.memory_queue.tail==200:
+            #     import pdb
+            #     pdb.set_trace()
+            # loss_recon = -torch.multiply(contrast_label,torch.log(img_text_logits))-torch.multiply(contrast_label,torch.log(text_img_logits))
+            loss_recon = torch.mean(loss_recon)*0
+
+        else:
+            loss_recon = 0
+        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
+
+        return x, loss_recon
 
 class LAVT(_LAVTSimpleDecode):
-    pass
-
-
-class _LAVTSimpleDecodeconloss(nn.Module):
-    def __init__(self, backbone, classifier):
-        super(_LAVTSimpleDecodeconloss, self).__init__()
-        self.backbone = backbone
-        self.classifier = classifier
-
-    def forward(self, x, l_feats, l_mask):
-        input_shape = x.shape[-2:]
-        features = self.backbone(x, l_feats, l_mask)
-        l_new, (x_c1, x_c2, x_c3, x_c4) = features
-        defea, x = self.classifier(x_c4, x_c3, x_c2, x_c1)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-
-        return l_new, defea, x
-
-class LAVTconloss(_LAVTSimpleDecodeconloss):
-    pass
-
-class _LAVTSimpleDecode_cycle(nn.Module):
-    def __init__(self, backbone, classifier):
-        super(_LAVTSimpleDecode_cycle, self).__init__()
-        self.backbone = backbone
-        self.classifier = classifier
-
-    def forward(self, x, l_feats, l_mask):
-        input_shape = x.shape[-2:]
-        features = self.backbone(x, l_feats, l_mask)
-        x_c1, x_c2, x_c3, x_c4 = features
-        pre1, pre2, x = self.classifier(x_c4, x_c3, x_c2, x_c1)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-        pre1 = F.interpolate(pre1, size=input_shape, mode='bilinear', align_corners=True)
-        pre2 = F.interpolate(pre2, size=input_shape, mode='bilinear', align_corners=True)
-
-        return pre1, pre2, x
-
-
-class LAVT_cycle(_LAVTSimpleDecode_cycle):
-    pass
-
-class _LAVTSimpleDecode_KC(nn.Module):
-    def __init__(self, backbone, classifier):
-        super(_LAVTSimpleDecode_KC, self).__init__()
-        self.backbone = backbone
-        self.classifier = classifier
-
-    def forward(self, x, l_feats, l_mask):
-        input_shape = x.shape[-2:]
-        features = self.backbone(x, l_feats, l_mask)
-        x_c1, x_c2, x_c3, x_c4 = features
-        x = self.classifier(x_c4, x_c3, x_c2, x_c1)
-        x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
-
-        return x
-
-
-class LAVT_kcdecode(_LAVTSimpleDecode_KC):
     pass
 
 
@@ -111,6 +101,7 @@ class _LAVTOneSimpleDecode(nn.Module):
         features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
         x = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
 
         return x

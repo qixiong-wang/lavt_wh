@@ -153,7 +153,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
             # if len(embedding_queue)==53:
             #     import pdb
             #     pdb.set_trace()
-            output, loss_recon = model(image, embedding, attentions, target)
+            output, loss_recon = model(image, embedding, attentions)
         else:
             output = model(image, sentences, target, l_mask=attentions)
 
