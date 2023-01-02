@@ -190,7 +190,7 @@ def train_one_epoch(model, criterion, optimizer, data_loader, lr_scheduler, epoc
 
         # loss_lansim = cossim(lanp, lanm, attentions)
         loss_seg = criterion(output, target)
-        loss = loss_seg + loss_lansim * 0.01 + loss_contra * 0.0001
+        loss = loss_seg + loss_lansim * 0.01 + loss_contra * 0.01
         optimizer.zero_grad()  # set_to_none=True is only available in pytorch 1.6+
         loss.backward()
         optimizer.step()
@@ -311,14 +311,14 @@ def main(args):
                                   )
 
     # learning rate scheduler
-    warm_up_iter = 800
-    lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
-            (1 - x / (len(data_loader) * args.epochs)) ** 0.9
+    # warm_up_iter = 800
+    # lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
+    #         (1 - x / (len(data_loader) * args.epochs)) ** 0.9
+    #
+    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
 
-    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
-
-    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
-    #                                                  lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
+                                                     lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
 
     # housekeeping
     start_time = time.time()
@@ -389,5 +389,6 @@ if __name__ == "__main__":
     # shutil.copytree('./lib/', os.path.join(work_dir, 'lib'))
     # os.system('cp %s %s' % ('./lib/', log_dir))
     # LOG_FOUT = open(os.path.join(log_dir, 'log_train.txt'), 'w')
+    log_string(str(parser.parse_args()))
     log_string('Image size: {}'.format(str(args.img_size)))
     main(args)
