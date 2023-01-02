@@ -55,12 +55,12 @@ class SimpleDecoding(nn.Module):
     def __init__(self, c4_dims, factor=2):
         super(SimpleDecoding, self).__init__()
 
-        hidden_size = c4_dims//factor
+        hidden_size = c4_dims
         lan_size = 768
         c4_size = c4_dims
-        c3_size = c4_dims//(factor**1)
-        c2_size = c4_dims//(factor**2)
-        c1_size = c4_dims//(factor**3)
+        c3_size = c4_dims
+        c2_size = c4_dims//(factor**1)
+        c1_size = c4_dims//(factor**2)
 
         self.adpool = nn.AdaptiveAvgPool2d((1, 1))
 

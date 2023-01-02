@@ -15,9 +15,9 @@ class Nce_Contrast_Loss(nn.Module):
         self.team = team
         self.adpool = nn.AdaptiveAvgPool2d((1, 1))
         self.batch = batch
-        # self.align_lan = nn.Sequential(
-        #     nn.Conv1d(768, 768, kernel_size=1, stride=1),
-        # )
+        self.align_lan = nn.Sequential(
+            nn.Conv1d(768, 768, kernel_size=1, stride=1),
+        )
 
 
     def forward(self, vis_feature, lan_feature):
@@ -28,8 +28,8 @@ class Nce_Contrast_Loss(nn.Module):
         la = lan_feature # [B, 768, 20]
 
         vv1 = F.normalize(vv, dim=1)
-        # la1 = self.align_lan(la)
-        la1 = la
+        la1 = self.align_lan(la)
+        # la1 = la
         la1 = self.adpool(la1.unsqueeze(3)).view(la.shape[0], la.shape[1])
         la1 = F.normalize(la1, dim=1)
         # pdb.set_trace()
