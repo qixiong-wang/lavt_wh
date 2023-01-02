@@ -385,7 +385,7 @@ class MultiModalSwinTransformer(nn.Module):
 
         # build layers
         self.layers = nn.ModuleList()
-        for i_layer in range(self.num_layers):
+        for i_layer in range(self.num_layers-1):
             layer = MMBasicLayer(
                 dim=int(embed_dim * 2 ** i_layer),
                 depth=depths[i_layer],
@@ -398,19 +398,41 @@ class MultiModalSwinTransformer(nn.Module):
                 attn_drop=attn_drop_rate,
                 drop_path=dpr[sum(depths[:i_layer]):sum(depths[:i_layer + 1])],
                 norm_layer=norm_layer,
-                downsample=PatchMerging if (i_layer < self.num_layers - 1) else None,
+                downsample=PatchMerging if (i_layer < self.num_layers - 2) else None,
                 use_checkpoint=use_checkpoint,
                 num_heads_fusion=num_heads_fusion[i_layer],
                 fusion_drop=fusion_drop
             )
             self.layers.append(layer)
 
-        num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
+        i_layer= 3
+        layer = MMBasicLayer(
+            dim=int(embed_dim * 2 ** 2),
+            depth=depths[i_layer],
+            num_heads=num_heads[i_layer],
+            window_size=window_size,
+            mlp_ratio=mlp_ratio,
+            qkv_bias=qkv_bias,
+            qk_scale=qk_scale,
+            drop=drop_rate,
+            attn_drop=attn_drop_rate,
+            drop_path=dpr[sum(depths[:i_layer]):sum(depths[:i_layer + 1])],
+            norm_layer=norm_layer,
+            downsample=None,
+            use_checkpoint=use_checkpoint,
+            num_heads_fusion=num_heads_fusion[i_layer],
+            fusion_drop=fusion_drop
+        )
+        self.layers.append(layer)
+
+        num_features = [128, 256, 512, 512]
+        # num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
         self.num_features = num_features
 
         # add a norm layer for each output
         for i_layer in out_indices:
             layer = norm_layer(num_features[i_layer])
+
             layer_name = f'norm{i_layer}'
             self.add_module(layer_name, layer)
 
@@ -479,6 +501,7 @@ class MultiModalSwinTransformer(nn.Module):
 
             if i in self.out_indices:
                 norm_layer = getattr(self, f'norm{i}')
+
                 x_out = norm_layer(x_out)  # output of a Block has shape (B, H*W, dim)
 
                 out = x_out.view(-1, H, W, self.num_features[i]).permute(0, 3, 1, 2).contiguous()

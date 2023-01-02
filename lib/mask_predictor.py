@@ -8,11 +8,11 @@ class SimpleDecoding(nn.Module):
     def __init__(self, c4_dims, factor=2):
         super(SimpleDecoding, self).__init__()
 
-        hidden_size = c4_dims//factor
+        hidden_size = c4_dims
         c4_size = c4_dims
-        c3_size = c4_dims//(factor**1)
-        c2_size = c4_dims//(factor**2)
-        c1_size = c4_dims//(factor**3)
+        c3_size = c4_dims
+        c2_size = c4_dims//(factor**1)
+        c1_size = c4_dims//(factor**2)
 
         self.conv1_4 = nn.Conv2d(c4_size+c3_size, hidden_size, 3, padding=1, bias=False)
         self.bn1_4 = nn.BatchNorm2d(hidden_size)
