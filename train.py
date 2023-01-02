@@ -21,7 +21,14 @@ import torch.nn.functional as F
 
 import gc
 from collections import OrderedDict
+import random
 
+def setup_seed(seed):
+    torch.manual_seed(seed)
+    torch.cuda.manual_seed_all(seed)
+    np.random.seed(seed)
+    random.seed(seed)
+    torch.backends.cudnn.deterministic = True
 
 def get_dataset(image_set, transform, args):
     from data.dataset_refer_bert import ReferDataset
@@ -332,5 +339,6 @@ if __name__ == "__main__":
     args = parser.parse_args()
     # set up distributed learning
     utils.init_distributed_mode(args)
+    setup_seed(3407)
     print('Image size: {}'.format(str(args.img_size)))
     main(args)
