@@ -86,6 +86,7 @@ class Memory_queue(nn.Module):
                                              between proposals and labeled persons.
         """
         vis_feat_gather,lag_feat_gather = undefined_l_gather(vis_feat,lag_feat)
+        # vis_feat_gather,lag_feat_gather = vis_feat,lag_feat
         # if vis_feat.get_device() == 0:
         #     import pdb
         #     pdb.set_trace()

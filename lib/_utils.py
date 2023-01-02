@@ -15,7 +15,7 @@ class _LAVTSimpleDecode(nn.Module):
     def __init__(self, backbone, classifier):
         super(_LAVTSimpleDecode, self).__init__()
         self.backbone = backbone
-        self.number_of_instance = 100
+        self.number_of_instance = 200
         self.memory_queue = Memory_queue(number_of_instance=self.number_of_instance, feat_len=768)
         self.classifier = classifier
         self.lan_embedding = nn.Linear(768, 768)
@@ -46,17 +46,20 @@ class _LAVTSimpleDecode(nn.Module):
             # img_text_logits = F.softmax(10*torch.matmul(vis_embedding,l_feat_last.permute(1,0)),dim=1)
             # text_img_logits = F.softmax(10*torch.matmul(l_feat_last,vis_embedding.permute(1,0)),dim=0)
             pos_ind = torch.arange(batch_size).cuda(l_feat_last.device) + self.memory_queue.tail - batch_size*(world_size-rank)
+            # pos_ind = torch.arange(batch_size).cuda(l_feat_last.device) + self.memory_queue.tail- batch_size
             pos_ind = torch.where(pos_ind<0,pos_ind+self.number_of_instance,pos_ind)
-            if text_img_logits.get_device() == 0:
-                import pdb
-                pdb.set_trace()
-            else:
-                dist.barrier()
+            # if text_img_logits.get_device() == 0 and self.memory_queue.tail==64:
+            # # print(pos_ind)
+            #     import pdb
+            #     pdb.set_trace()
+            # else:
+            #     dist.barrier()
+        
             loss_recon = -torch.multiply(contrast_label,torch.log(img_text_logits[pos_ind]))-torch.multiply(contrast_label,torch.log(text_img_logits[pos_ind]))
             loss_recon = torch.mean(loss_recon)
-            if loss_recon<0.2:
-                import pdb
-                pdb.set_trace()
+            # if loss_recon<0.2:
+            #     import pdb
+            #     pdb.set_trace()
         else:
             loss_recon = 0
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
