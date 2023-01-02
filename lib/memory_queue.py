@@ -93,14 +93,14 @@ class Memory_queue(nn.Module):
         #     dist.barrier()
         
         # gather_features,gather_pid_labels = undefined_l_gather(features,pid_labels)
-        with torch.no_grad():
-            sample_number = vis_feat_gather.shape[0]
-            for indx in range(sample_number):
-                self.vis_memory_queue[self.tail] = vis_feat_gather[indx]
-                self.lag_memory_queue[self.tail] = lag_feat_gather[indx]
-                # self.large_batch_queue[label,self.tail[label]] = torch.mean(features[pid_labels==label],dim=0)
-                self.tail+=1
-                if self.tail >= self.lag_memory_queue.shape[0]:
-                    self.tail -= self.lag_memory_queue.shape[0]
+        # with torch.no_grad():
+        sample_number = vis_feat_gather.shape[0]
+        for indx in range(sample_number):
+            self.vis_memory_queue[self.tail] = vis_feat_gather[indx]
+            self.lag_memory_queue[self.tail] = lag_feat_gather[indx]
+            # self.large_batch_queue[label,self.tail[label]] = torch.mean(features[pid_labels==label],dim=0)
+            self.tail+=1
+            if self.tail >= self.lag_memory_queue.shape[0]:
+                self.tail -= self.lag_memory_queue.shape[0]
 
         return self.vis_memory_queue, self.lag_memory_queue
