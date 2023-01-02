@@ -21,6 +21,7 @@ class _LAVTSimpleDecode(nn.Module):
         features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
         x, vis_embedding = self.classifier(x_c4, x_c3, x_c2, x_c1)
+        
         vis_embedding = vis_embedding.squeeze()
         if len(vis_embedding.shape)>1: ### eval
             vis_embedding = F.normalize(vis_embedding,dim=1)
@@ -36,11 +37,11 @@ class _LAVTSimpleDecode(nn.Module):
             contrast_label = torch.eye(1000).cuda(l_feat_last.device)
 
             img_text_logits = F.softmax(10*torch.matmul(vis_embedding_queue,l_feat_queue.permute(1,0)),dim=1)
-            text_img_logits = F.softmax(10*torch.matmul(vis_embedding_queue,l_feat_queue.permute(1,0)),dim=0)
-            import pdb
-            pdb.set_trace()
+            text_img_logits = F.softmax(10*torch.matmul(l_feat_queue,vis_embedding_queue.permute(1,0)),dim=0)
+            
             loss_recon = -torch.multiply(contrast_label,torch.log(img_text_logits))-torch.multiply(contrast_label,torch.log(text_img_logits))
             loss_recon = torch.mean(loss_recon)*contrast_label.shape[0]
+
         else:
             loss_recon = 0
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
