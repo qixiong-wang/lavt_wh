@@ -61,7 +61,7 @@ def _segm_lavt(pretrained, args):
     # model_map = [SimpleDecoding, LAVTconloss]
     # model_map = [SimpleDecoding, LAVT_kcdecode]
 
-    classifier = model_map[0](4*embed_dim)
+    classifier = model_map[0](2*embed_dim)
     base_model = model_map[1]
 
     model = base_model(backbone, classifier)

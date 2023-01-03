@@ -59,8 +59,8 @@ class SimpleDecoding(nn.Module):
         lan_size = 768
         c4_size = c4_dims
         c3_size = c4_dims
-        c2_size = c4_dims//(factor**1)
-        c1_size = c4_dims//(factor**2)
+        c2_size = c4_dims
+        c1_size = c4_dims//(factor**1)
 
         self.adpool = nn.AdaptiveAvgPool2d((1, 1))
 
