@@ -22,7 +22,7 @@ from data.dataset_coco import intersect_and_union
 def get_dataset(image_set, transform, args):
     from data.dataset_coco import CocoDataset
     ds = CocoDataset(ann_file='annotations/instances_train2014.json',)
-    num_classes = 80
+    num_classes = 81
 
     return ds, num_classes
 
