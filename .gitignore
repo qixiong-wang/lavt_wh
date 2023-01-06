@@ -16,3 +16,4 @@ vis*
 *.log
 *.pyc
 *.gv
+*.pyc
