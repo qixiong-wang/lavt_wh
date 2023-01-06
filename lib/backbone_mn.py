@@ -611,6 +611,21 @@ class MMBasicLayer(nn.Module):
         x = x + (self.res_gate(x_residual) * x_residual)
         l = l + self.W_l(l_residual)
 
+        # x_residual, l_residual = self.fusion(x, l, l_mask)
+        # # apply a gate on the residual
+        # x0 = x + (self.res_gate(x_residual) * x_residual)
+        # x = rearrange(x, 'b (h w) c -> b c h w', h=int(math.sqrt(x.shape[1])))
+        # x1 = F.interpolate(x, scale_factor=1.25, mode='bilinear', align_corners=True)
+        # x1 = rearrange(x1, 'b c h w -> b (h w) c')
+        # x1_residual, l1_residual = self.fusion(x1, l, l_mask)
+        # x1 = x1 + (self.res_gate(x1_residual) * x1_residual)
+        # x1 = rearrange(x1, 'b (h w) c -> b c h w', h=int(math.sqrt(x1.shape[1])))
+        # x1 = F.interpolate(x1, size=x.shape[-2:], mode='bilinear', align_corners=True)
+        # x1 = rearrange(x1, 'b c h w -> b (h w) c')
+        # x = x1 + x0
+        # l = l + self.W_l(l_residual)
+
+
         if self.downsample is not None:
             x_down = self.downsample(x, H, W)
             Wh, Ww = (H + 1) // 2, (W + 1) // 2

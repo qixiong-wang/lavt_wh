@@ -18,6 +18,7 @@ import transforms as T
 from transform1 import new_transform
 import utils
 import numpy as np
+from dense_crf import DenseCRF
 
 import torch.nn.functional as F
 
@@ -58,6 +59,22 @@ def IoU(pred, gt):
     return iou, intersection, union
 
 
+def IoU_np(pred, gt):
+    # pred = pred.argmax(1)
+    pred = np.argmax(pred, 1)
+
+    # intersection = torch.sum(torch.mul(pred, gt))
+    intersection = np.sum(pred * gt)
+    # union = torch.sum(torch.add(pred, gt)) - intersection
+    union = np.sum(np.add(pred, gt)) - intersection
+
+    if intersection == 0 or union == 0:
+        iou = 0
+    else:
+        iou = float(intersection) / float(union)
+
+    return iou, intersection, union
+
 def get_transform(args):
     transforms = [T.Resize(args.img_size, args.img_size),
                   T.ToTensor(),
@@ -72,7 +89,7 @@ def criterion(input, target):
     return nn.functional.cross_entropy(input, target, weight=weight)
 
 
-def evaluate(model, data_loader, bert_model):
+def evaluate(model, data_loader, bert_model, postprocessor):
     model.eval()
     metric_logger = utils.MetricLogger(delimiter="  ")
     header = 'Test:'
@@ -107,7 +124,44 @@ def evaluate(model, data_loader, bert_model):
             else:
                 output = model(image, sentences, l_mask=attentions)
 
+            #
+            #
+            # mean = [0.485, 0.456, 0.406]
+            # std = [0.229, 0.224, 0.225]
+            # mean_rgb = [122.675, 116.669, 104.008]
+            # mean_bgr = [104.008, 116.669, 122.675]
+            #
+            # mean = np.array(mean)
+            # mean = np.expand_dims(mean, 1)
+            # mean = np.expand_dims(mean, 2)
+            # std = np.array(std)
+            # std = np.expand_dims(std, 1)
+            # std = np.expand_dims(std, 2)
+            #
+            # mean_bgr = np.array(mean_bgr)
+            # mean_bgr = np.expand_dims(mean_bgr, 1)
+            # mean_bgr = np.expand_dims(mean_bgr, 2)
+            #
+            # img = image.squeeze(0)
+            # img = np.array(img.cpu())
+            # img = (img * std + mean) * 255
+            # img = img - mean_bgr
+            # # pdb.set_trace()
+            # img = img.transpose(1, 2, 0)
+            # img = np.uint8(img)
+            #
+            # np.array(image.data.cpu()).astype(np.uint8).squeeze(0).transpose(1, 2, 0)
+            # logit = output.cpu()
+            # prob = F.softmax(logit, dim=1)[0].numpy()
+            # prob = postprocessor(img, prob)
+            # # prob = np.expand_dims(prob, 0)
+            # # target1 = np.array(target.data.cpu())
+            # output1 = torch.tensor(prob).cuda().unsqueeze(0)
+            #
+            # # pdb.set_trace()
+
             iou, I, U = IoU(output, target)
+            # iou, I, U = IoU_np(prob, target1)
             acc_ious += iou
             mean_IoU.append(iou)
             cum_I += I
@@ -299,8 +353,18 @@ def main(args):
     else:
         resume_epoch = -999
 
-    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
-    # pdb.set_trace()
+    postprocessor = DenseCRF(
+        iter_max=10,
+        pos_xy_std=1,
+        pos_w=3,
+        bi_xy_std=67,
+        bi_rgb_std=3,
+        bi_w=4,
+    )
+
+
+    iou, overallIoU = evaluate(model, data_loader_test, bert_model, postprocessor)
+    pdb.set_trace()
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
