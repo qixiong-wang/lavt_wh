@@ -331,7 +331,7 @@ class CocoDataset(Dataset):
                  ):
         self.ann_file = ann_file
         self.img_prefix = img_prefix
-        self.data_infos = self.load_annotations(self.ann_file)[0:1000]
+        self.data_infos = self.load_annotations(self.ann_file)
 
         self.mean= np.array([123.675, 116.28, 103.53], dtype=np.float32)
         self.std= np.array([58.395, 57.12, 57.375], dtype=np.float32)
