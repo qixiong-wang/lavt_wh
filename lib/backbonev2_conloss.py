@@ -450,6 +450,8 @@ class MultiModalSwinTransformer(nn.Module):
 
         num_features = [int(embed_dim * 2 ** i) for i in range(self.num_layers)]
         self.num_features = num_features
+        for bly in self.layers:
+            bly._init_respostnorm()
 
         # add a norm layer for each output
         for i_layer in out_indices:
@@ -501,6 +503,7 @@ class MultiModalSwinTransformer(nn.Module):
             self.apply(_init_weights)
         else:
             raise TypeError('pretrained must be a str or None')
+
 
     def forward(self, x, l, l_mask):
         """Forward function."""
@@ -655,6 +658,12 @@ class MMBasicLayer(nn.Module):
             return x_residual, l, H, W, x_down, Wh, Ww
         else:
             return x_residual, l, H, W, x, H, W
+    def _init_respostnorm(self):
+        for blk in self.blocks:
+            nn.init.constant_(blk.norm1.bias, 0)
+            nn.init.constant_(blk.norm1.weight, 0)
+            nn.init.constant_(blk.norm2.bias, 0)
+            nn.init.constant_(blk.norm2.weight, 0)
 
 
 class PWAM(nn.Module):

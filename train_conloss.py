@@ -271,7 +271,8 @@ def main(args):
     backbone_no_decay = list()
     backbone_decay = list()
     for name, m in single_model.backbone.named_parameters():
-        if 'norm' in name or 'absolute_pos_embed' in name or 'relative_position_bias_table' in name:
+        if 'norm' in name or 'absolute_pos_embed' in name or 'relative_position_bias_table' in name \
+                or "cpb_mlp" in name or "logit_scale" in name:
             backbone_no_decay.append(m)
         else:
             backbone_decay.append(m)
@@ -318,14 +319,14 @@ def main(args):
                                   )
 
     # learning rate scheduler
-    warm_up_iter = 800
-    lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
-            (1 - x / (len(data_loader) * args.epochs)) ** 0.9
+    # warm_up_iter = 800
+    # lambda0 = lambda x: x / warm_up_iter if x < warm_up_iter else \
+    #         (1 - x / (len(data_loader) * args.epochs)) ** 0.9
+    #
+    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
 
-    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer, lr_lambda = lambda0)
-
-    # lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
-    #                                                  lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
+    lr_scheduler = torch.optim.lr_scheduler.LambdaLR(optimizer,
+                                                     lambda x: (1 - x / (len(data_loader) * args.epochs)) ** 0.9)
 
     # housekeeping
     start_time = time.time()
@@ -343,7 +344,7 @@ def main(args):
         resume_epoch = -999
     log_string('Training begin, the previous best_performance is {}'.format(best_oIoU))
 
-    iou, overallIoU = evaluate(model, data_loader_test, bert_model)
+    # iou, overallIoU = evaluate(model, data_loader_test, bert_model)
     # training loops
     for epoch in range(max(0, resume_epoch+1), args.epochs):
         data_loader.sampler.set_epoch(epoch)
