@@ -21,7 +21,7 @@ class _LAVTSimpleDecode(nn.Module):
         input_shape = x.shape[-2:]
         l_new, features = self.backbone(x, l_feats, l_mask)
         x_c1, x_c2, x_c3, x_c4 = features
-        defea, l1, x = self.classifier(l_feats1, x_c4, x_c3, x_c2, x_c1)
+        defea, l1, x = self.classifier(l_new, l_feats1, x_c4, x_c3, x_c2, x_c1)
         x = F.interpolate(x, size=input_shape, mode='bilinear', align_corners=True)
         if defea.shape[0] > 1:
             loss_contrastive = self.contrastive(defea, l_new)
