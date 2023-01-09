@@ -5,8 +5,9 @@ import pdb
 from collections import OrderedDict
 from .lan_decoder import simple_lan_transformer1
 
-
-
+########
+#### hidden_sie=c4_dims // 2 的decoder (这个值应该是512)
+########
 
 class CrossLayerFuse(nn.Module):
     def __init__(self, in_dims1, in_dims2, out_dims):

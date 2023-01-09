@@ -1,6 +1,6 @@
 import torch
 import torch.nn as nn
-from .mask_predictor import SimpleDecoding
+from .mask_predictor1 import SimpleDecoding
 from .backbone_mn import MultiModalSwinTransformer
 from ._utils import LAVT, LAVTOne, LAVT1
 
