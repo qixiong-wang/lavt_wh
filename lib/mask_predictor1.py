@@ -82,7 +82,7 @@ class SimpleDecoding(nn.Module):
         self.bn2_3 = nn.BatchNorm2d(hidden_size)
         self.relu2_3 = nn.ReLU()
         self.crossfuse1 = CrossLayerFuse(hidden_size, hidden_size, lan_size)
-        self.transformer_fusion2 = Transformer_Fusion(hidden_size=hidden_size, dim=768, nhead=4, num_layers=1)
+        # self.transformer_fusion2 = Transformer_Fusion(hidden_size=hidden_size, dim=768, nhead=4, num_layers=1)
 
 
         self.conv1_2 = nn.Conv2d(hidden_size + c1_size, hidden_size, 3, padding=1, bias=False)
@@ -134,7 +134,7 @@ class SimpleDecoding(nn.Module):
         new_lan = self.lan_func(x, lan)
         defea = self.crossfuse1(defea, x)
 
-        x = self.transformer_fusion2(x, lan_full)
+        # x = self.transformer_fusion2(x, lan_full)
 
         # fuse top-down features and Y1 features
         if x.size(-2) < x_c1.size(-2) or x.size(-1) < x_c1.size(-1):
